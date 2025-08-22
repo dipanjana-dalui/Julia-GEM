@@ -51,8 +51,15 @@ function main()
         par_names,
         geno_names
     )
+    #CALC STANDARDIZED TIME STEPS
+    stand_time = range(0, t_max, step = min_time_step_to_store);
+    stand_time = collect(stand_time);
+    num_time_steps = length(stand_time);
 
-
+    # CALCULATE CONSTANTS
+# calculate initial constant 
+r_max = b_max-d_min
+#K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
     # Instantiate the SimulationParameters struct
     const SIMULATION_PARAMETERS = SimulationParameters(
         GEM_VERSION,
