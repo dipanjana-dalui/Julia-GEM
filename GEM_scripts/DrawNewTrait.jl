@@ -1,8 +1,11 @@
 ##############################################
 #		  FUNCTION DRAW NEW TRAITS           #
 ##############################################
-function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64}, 
-						h2_vect::Matrix{Float64}, no_param::Int64, no_columns::Int64, col::Int64, j::Int64)
+#function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64}, 
+#						h2_vect::Matrix{Float64}, no_param::Int64, no_columns::Int64, col::Int64, j::Int64)
+function DrawNewTraits(p::DNTArgs)
+
+    @unpack x_dist, parent_traits, h2_vect, no_param, no_columns, col, j = p
 
 	pop_size = size(x_dist[x_dist[:, 1] .== col, 2:no_param+1])
 	# QUANTITATIVE TRAITS
@@ -37,7 +40,7 @@ function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64},
 	offspring_genotypes = collect(transpose(parent_traits[no_param+1:no_columns-1]))
 	##### what happens to genotype?
 
-	return offspring_traits, offspring_genotypes
+	return (offspring_traits=offspring_traits, offspring_genotype=offspring_genotypes)
 end
 
 """
@@ -51,7 +54,7 @@ split into multiple functions
 	- best to not change output dimensions just yet.
 	- DON'T FIX WHAT AIN'T BROKEN.
 	- multi-threading could be useful (using Base.Threads).
-"""
+
 
 # Use broadcasting and a more robust way to handle single-individual variance
 function get_pop_stats(x_dist::Matrix{Float64}, species_col::Int64, params::SimParams)
@@ -126,3 +129,5 @@ function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64},
 
     return offspring_traits, offspring_genotypes
 end
+
+"""

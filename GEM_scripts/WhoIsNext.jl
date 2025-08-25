@@ -2,14 +2,18 @@
 ##############################################
 #			FUNCTION WHO IS NEXT?	         #
 ##############################################
-function WhoIsNext(x_dist::Matrix{Float64}, no_species::Int64, no_columns::Int64, no_param::Int64, 
-	N0::Vector{Int64}, state_par_match::Matrix{Int64}, state_geno_match::Matrix{Int64})
+#function WhoIsNext(x_dist::Matrix{Float64}, no_species::Int64, no_columns::Int64, no_param::Int64, 
+#	N0::Vector{Int64}, state_par_match::Matrix{Int64}, state_geno_match::Matrix{Int64})
+
+function WhoIsNext(p::WINArg)
+	@unpack x_dist, no_species, no_columns, no_param, N0, state_par_match, state_geno_match = WINArg
 
 	state_par_match = zero_to_nan(state_par_match)
 	state_geno_match = zero_to_nan(state_geno_match)
 	
 	params_next = fill(NaN,no_species, no_param)
 	genotype_next = fill(NaN, no_species, size(state_geno_match, 2))
+	# whosnext = zeros(Int, no_species) # Better to use a specific type like Int??
 	whosnext = fill(NaN,length(N0)) 
 
 	for zz = 1:no_species
@@ -27,11 +31,6 @@ function WhoIsNext(x_dist::Matrix{Float64}, no_species::Int64, no_columns::Int64
 			#genotypes_next[zz,which_genotypes] = 0 # if pop is gone, set genotypes to 0
 		end
 	end
-	return params_next, genotype_next, whosnext
+	return (param_next=params_next, genotype_next=genotype_next, whosnext=whosnext)
 end
 
-"""
-use struct
-only suggestion worth considering:
-	whosnext = zeros(Int, no_species) # Better to use a specific type like Int
-"""

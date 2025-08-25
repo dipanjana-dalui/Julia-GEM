@@ -2,8 +2,15 @@
 This is the struct file for setup
 """
 # ======================================================================
-# SETUP PARAMETER STRUCTURES
+#           SETUP STRUCTURES
 # ======================================================================
+"""
+    InitState
+Initial state struct
+"""
+mutable struct InitState
+    N::Vector{Int}
+end
 
 """
     ModelParameters{T}
@@ -17,13 +24,7 @@ struct ModelParameters{Float64}
     m::Float64      # Mortality rate of predators/pathogens
 end
 
-"""
-    InitState
-Initial state struct
-"""
-mutable struct InitState
-    N::Vector{Int}
-end
+
 
 """
     SimulationParameters
@@ -44,16 +45,12 @@ end
     DesignChoices{T}
 Eco-evo choices
 """
-struct DesignChoices{T}
-    h2_vect::Matrix{T}
-    cv_vect::Matrix{T}
+struct DesignChoices
+    h2_vect::Matrix{Float64}
+    cv_vect::Matrix{Float64}
+    GEM_ver::Vector{String}
 end
 
-struct SimulationOutput
-    pop_stand_out_all::Array{Float64, 4}
-    x_stand_out_all::Array{Float64, 5}
-    x_var_stand_out_all::Array{Float64, 5}
-end
 
 struct SimulationMapping
     state_par_match::Matrix{Int64}
@@ -63,40 +60,73 @@ struct SimulationMapping
     geno_names::Vector{String}
 end
 
+struct GEMOutput
+    pop_stand::Array{Float64, 4}
+    trait_moment1::Array{Float64, 5}
+    trait_moment2::Array{Float64, 5}
+end
+
+
 # ======================================================================
 # BIRTH-DEATH FUNCTIONS
 # ======================================================================
-
-function birth_prey(p::ModelParameters, s::InitState)
-    return max(p.b_max * s.N[1], 0.0)
-end
-
-function death_prey(p::ModelParameters, s::InitState)
-    death = p.d_min * s.N[1]
-    pred_death = p.scr * s.N[1] * s.N[2]
-    return death + pred_death
-end
-
-function birth_pred(p::ModelParameters, s::InitState)
-    return p.fec * p.scr * s.N[1] * s.N[2]
-end
-
-function death_pred(p::ModelParameters, s::InitState)
-    return p.m * s.N[2]
-end
-
 """
-struct ParNext
-    
-
-
-end
+Issues with defining the functions with struct ModelParamsters:
+ - the functions below will go to struct ModelParameters 
+ and look for b_max. But when being used to calculate the
+event_terms, we don't have a struct. It will pull the 
+b_max value from the param_next structured created evolve_system_in_time_with_extinction_check
+the GEM loop. For now, stick to the former definitiond 
+without going through the struct for this set of funcs. 
 """
-function event_terms(p::ParNext, s::InitState)
-    birth_H = birth_prey(p, s)
-    death_H = death_prey(p, s)
-    birth_P = birth_pred(p, s)
-    death_P = death_pred(p, s)
+
+#function birth_prey(p::ModelParameters, s::InitState)
+#    return max(p.b_max * s.N[1], 0.0)
+#end
+function birth_prey(b_max::Float64, N::Vector{Int64})
+    birth = max((b_max*N[1]),0)
+end
+
+#function death_prey(p::ModelParameters, s::InitState)
+#    death = p.d_min * s.N[1]
+#    pred_death = p.scr * s.N[1] * s.N[2]
+#    return death + pred_death
+#end
+function death_prey(d_min::Float64, N::Vector{Int64}, scr::Float64)
+    death =  d_min .* N[1]
+    pred_death = scr .* N[1] .* N[2]
+    pred_death = pred_death[1]
+    death = death + pred_death
+end
+
+
+#function birth_pred(p::ModelParameters, s::InitState)
+#    return p.fec * p.scr * s.N[1] * s.N[2]
+#end
+function birth_pred(scr::Float64, N::Vector{Int64}, fec::Float64)
+    birth = fec .* scr .* N[1] .* N[2]
+end
+
+#function death_pred(p::ModelParameters, s::InitState)
+#    return p.m * s.N[2]
+#end
+function death_pred(m::Float64, N::Vector{Int64})
+    death = m*N[2]
+end
+
+function event_terms(params_next::Matrix{Float64}, s::InitState)
+    b_max = params_next[1,1] # max birth
+    d_min = params_next[1,2] # min death
+    #b_s = params_next[1,3] # density dependence of birth
+    #d_s = params_next[1,4]
+    scr = params_next[2,3]
+    fec = params_next[2,4]
+    m = params_next[2,5]
+
+    birth_H =  birth_prey(b_max, N)
+    death_H =  death_prey(d_min, N, scr)
+    birth_P =  birth_pred(scr, N, fec)
+    death_P =  death_pred(m, N) 
     return birth_H, death_H, birth_P, death_P
 end
 

@@ -1,10 +1,49 @@
+struct InitiatePopArg
+N0::Vector{Int64}
+which_par_quant::Matrix{Int64}
+state_geno_match::Matrix{Int64}, 
+state_par_match::Matrix{Int64}, 
+init_comm_mat::Matrix{Float64}, 
+params::Vector{Float64}, 
+cv_vect::Matrix{Float64}, 
+j::Int64
+end
+
+"""
+## instantiate in GEM_Sim code
+ip_args = InitiatePopArg(
+	N0,
+	which_par_quant,
+	state_geno_match,
+	state_par_match,
+	init_comm_mat,
+	params,
+	cv_vect, 
+	j
+)
+
+pre-allocate o/p matrix
+community_matrix = Matrix{Float64}(undef, total_individuals, 1 + n_params + n_genotypes)
+-then you will be saving the result in a comm_mat that will get returned. Make sure it'same
+being saved into an appropiate name for keeping downstream smooth.
+
+No changes needed for the rest.
+
+"""
+
 ##############################################
 #		FUNCTION INITIATE POPULATION         #
 ##############################################
-function InitiatePop(N0::Vector{Int64}, which_par_quant::Matrix{Int64}, state_geno_match::Matrix{Int64}, 
-	state_par_match::Matrix{Int64}, init_comm_mat::Matrix{Float64}, params::Vector{Float64}, 
-	cv_vect::Matrix{Float64}, j::Int64)
-	
+#function InitiatePop(N0::Vector{Int64}, which_par_quant::Matrix{Int64}, state_geno_match::Matrix{Int64}, 
+#	state_par_match::Matrix{Int64}, init_comm_mat::Matrix{Float64}, params::Vector{Float64}, 
+#	cv_vect::Matrix{Float64}, j::Int64)
+function InitiatePop(p::InitiatePopArg)
+@unpack N0, which_par_quant, state_geno_match, state_par_match, init_comm_mat, params, cv_vect, j = p
+# if you have elements from more than one struct, you will unpack each
+# alt notation: you can access each element as p.element_name
+# α, β, γ = p.α, p.β, p.γ. # explicit unpacking
+
+
 	# some conversions
     state_par_match = zero_to_nan(state_par_match)
     state_geno_match = zero_to_nan(state_geno_match)
@@ -50,14 +89,6 @@ function InitiatePop(N0::Vector{Int64}, which_par_quant::Matrix{Int64}, state_ge
 	return init_comm_mat
 end
 
-"""
-AI totally didn't get any of the code adaptation right.
-So, do the same - use struct as func arg. 
 
-pre-allocate o/p matrix
-community_matrix = Matrix{Float64}(undef, total_individuals, 1 + n_params + n_genotypes)
--then you will be saving the result in a comm_mat that will get returned. Make sure it'same
-being saved into an appropiate name for keeping downstream smooth.
 
-No changes needed for the rest.
-"""
+

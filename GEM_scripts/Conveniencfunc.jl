@@ -12,9 +12,12 @@ function deci_threshold(df::DataFrame)
 	return df_mod
 end
 
+
+
 """
 MoJuWo adapted
 """
+#=
 function zeros_to_nan(M::AbstractMatrix{<:Number})
     # Create a new matrix of the correct type to hold the results
     # The `convert` call ensures type stability for the output
@@ -37,3 +40,4 @@ function round_df(df::DataFrame)
     end
     return df_mod
 end
+=#

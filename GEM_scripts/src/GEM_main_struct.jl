@@ -1,11 +1,5 @@
 
 
-
-
-# Include the functions for your simulation (run_replicate, GEM_sim, etc.)
-include("simulation_functions.jl")
-
-
 # Define a struct for simulation results to make the code cleaner
 struct SimulationResults
     pop_df::DataFrame
