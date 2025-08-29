@@ -2,9 +2,9 @@
 #		  	  FUNCTION PICK EVENTS           #
 ##############################################
 
-#function PickEvent(terms::Vector{Float64}, no_species::Int64)
-function PickEvent(p::PEArgs)
-@unpack terms, no_species = p
+function PickEvent(terms::Vector{Float64}, no_species::Int)
+#function PickEvent(p::PEArgs)
+#@unpack terms, no_species = p
     terms = reshape(terms, 1, length(terms)) #reshape(ele_to_reshape, new_row, new_col)
 	c_sum = cumsum(terms, dims=2)  
 	pie_slices = c_sum ./ c_sum[end] #generated weighted slices b/w 0-1

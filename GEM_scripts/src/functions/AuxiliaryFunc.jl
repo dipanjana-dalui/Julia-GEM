@@ -8,7 +8,7 @@ include("WhoIsNext.jl")
 include("PlotFunc.jl")
 
 include("Conveniencfunc.jl")
-include("DrawNewTrait.jl")
+
 
 
 

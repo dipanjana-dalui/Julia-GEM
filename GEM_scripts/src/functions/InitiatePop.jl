@@ -1,3 +1,7 @@
+
+
+"""
+## instantiate in GEM_Sim code
 struct InitiatePopArg
 N0::Vector{Int64}
 which_par_quant::Matrix{Int64}
@@ -5,12 +9,10 @@ state_geno_match::Matrix{Int64},
 state_par_match::Matrix{Int64}, 
 init_comm_mat::Matrix{Float64}, 
 params::Vector{Float64}, 
-cv_vect::Matrix{Float64}, 
+cv::Matrix{Float64}, 
 j::Int64
 end
 
-"""
-## instantiate in GEM_Sim code
 ip_args = InitiatePopArg(
 	N0,
 	which_par_quant,
@@ -18,7 +20,7 @@ ip_args = InitiatePopArg(
 	state_par_match,
 	init_comm_mat,
 	params,
-	cv_vect, 
+	cv, 
 	j
 )
 
@@ -34,15 +36,14 @@ No changes needed for the rest.
 ##############################################
 #		FUNCTION INITIATE POPULATION         #
 ##############################################
-#function InitiatePop(N0::Vector{Int64}, which_par_quant::Matrix{Int64}, state_geno_match::Matrix{Int64}, 
-#	state_par_match::Matrix{Int64}, init_comm_mat::Matrix{Float64}, params::Vector{Float64}, 
-#	cv_vect::Matrix{Float64}, j::Int64)
-function InitiatePop(p::InitiatePopArg)
-@unpack N0, which_par_quant, state_geno_match, state_par_match, init_comm_mat, params, cv_vect, j = p
-# if you have elements from more than one struct, you will unpack each
-# alt notation: you can access each element as p.element_name
-# α, β, γ = p.α, p.β, p.γ. # explicit unpacking
-
+function InitiatePop(N0::Vector{Int}, 
+					which_par_quant::Matrix{Int}, 
+					state_geno_match::Matrix{Int},
+					state_par_match::Matrix{Int}, 
+					init_comm_mat::Matrix{Float64}, 
+					params::Vector{Float64},
+					cv::Matrix{Float64}, 
+					j::Int)
 
 	# some conversions
     state_par_match = zero_to_nan(state_par_match)
@@ -64,7 +65,7 @@ function InitiatePop(p::InitiatePopArg)
 		init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 1] .= qq
 		for zz = 1:length(params)
 			if !isnan(params_to_pick[zz,qq]) 
-				temp = PickIndiv(params_to_pick[zz,qq],cv_vect[j, qq]*params_to_pick[zz, qq],Int(traits_to_assign[qq,zz])) 
+				temp = PickIndiv(params_to_pick[zz,qq],cv[j, qq]*params_to_pick[zz, qq],Int(traits_to_assign[qq,zz])) 
 			else 
 				#temp = zeros(Int(y0[qq]),1)
 				temp = fill(NaN, Int(y0[qq]),1)
@@ -88,6 +89,7 @@ function InitiatePop(p::InitiatePopArg)
 	end
 	return init_comm_mat
 end
+
 
 
 
