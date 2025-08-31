@@ -29,8 +29,8 @@ function Trait_Plot(trait_mean::DataFrame, trait_var::DataFrame,
     trait_to_plot = "b_max"
     =#
 
-    meandf = deci_threshold(trait_mean)
-    vardf = deci_threshold(trait_var)
+    #meandf = deci_threshold(trait_mean)
+    #vardf = deci_threshold(trait_var)
     #pick the right GEM version number and state ID
     #meandf = meandf[meandf.GEM_ver .== GEMver, :]
     meandf = meandf[meandf.state_ID .== spID, :]

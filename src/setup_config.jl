@@ -39,7 +39,7 @@
     r_max = b_max-d_min
     #K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
 
-    
+    param_vect = [b_max, d_min, scr, fec, m]
     no_species = length(N_init) 
     no_param = fieldcount(ModelParameters) 
     
@@ -69,11 +69,18 @@
     x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
     x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
 
+    
     """ 1. Instantiate the initial population state """
     N0 = InitState(N_init)
     
     """ 2. Instantiate the model parameters struct with the generated values """
-    model_params = ModelParameters(b_max, d_min, scr, fec, m)
+    model_params = ModelParameters(
+        b_max, 
+        d_min, 
+        scr, 
+        fec, 
+    )
+   
 
     """ 3. Instantiate DesignChoices """
     design_choices = DesignChoice(
@@ -103,10 +110,13 @@
         min_time_step_to_store # Float64 
         )
     """ 6. Instantiate output container """
-    sim_output = GEMOutput(
+    sim_output = GEMSimOutput(
         pop_stand_out_all,
         x_stand_out_all,
         x_var_stand_out_all
         )
 
-        
+    """ 7. Instantiate ModelParVector """
+    model_par_vect = ModelParVector(
+        param_vect
+    )

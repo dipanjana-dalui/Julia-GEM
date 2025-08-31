@@ -31,6 +31,7 @@
     r_max = b_max-d_min
     K = floor(((b_max - d_min)/(b_s + d_s)))
     
+    param_vect = [b_max, d_min, b_s, d_s] 
     no_species = length(N_init) 
     no_param = fieldcount(ModelParameters) 
     
@@ -106,5 +107,10 @@
         x_stand_out_all,
         x_var_stand_out_all
         )
+        
+    """ 7. Instantiate ModelParVector """
+    model_par_vect = ModelParVector(
+        param_vect
+    )
 
         
