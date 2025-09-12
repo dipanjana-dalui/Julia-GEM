@@ -3,37 +3,34 @@ module JGEM
 # load packages
 include("functions/Packages.jl")
 
-# some dummy exports
-#export ModelParameters, PopulationState, event_terms, GEM_sim
+# functions you wish to be available to use from this module
+export run_replicate, GEM_sim, make_trait_df_long, make_pop_df_long,
+Pop_Plot, Trait_Plot
 
 # include files
 # 1. Load all dependent functions
 include("functions/AuxiliaryFunc.jl")
+include("bdLM_setup_struct.jl") 
+
+include("functions/GEM_main.jl")
+
 
 # 2. Setup
+# 2.1 Example birth-death Logistic Model
+#include("bdLM_setup_struct.jl") # definations of all of your setup params
+
+
 # 2.1 Example 2 species model
-include("setup_struct.jl") # definations of all of your setup params
-include("setup_config.jl") # instantiating the parameters 
+#include("setup_struct.jl") # definations of all of your setup params
+#include("setup_config.jl") # instantiating the parameters 
 
-# 2.2 Example birth-death Logistic Model
-include("bdLM_setup_struct.jl") # definations of all of your setup params
-include("bdLM_setup_config.jl")
+# 2.3. Include any other example model you want to load 
 
-# Include the main GEM file 
-include("GEM_main.jl")
+# 3. Load the core GEM function 
 
-run_sim = GEM_sim(N0, model_par_vect, design_choices, mappings, 
-                sim_params,sim_output)
 
-pop_df = make_pop_df_long(sim_output, sim_params, design_choices)
-trait_df = make_trait_df_long(sim_output, sim_params, design_choices, mappings)
 
-trait_df[1]
-
-typeof(trait_df)
-
-Pop_Plot(pop_df, 1)
-Trait_Plot()
+end
 
 """
 to check how many cores are available
@@ -51,4 +48,3 @@ To actually use these threads in your code, you'll need to use macros like @thre
 """
 
 
-end # module JGEM

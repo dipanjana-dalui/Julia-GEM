@@ -21,6 +21,7 @@ function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64},
 
 	exp_offspring_traits = h2[j,col] .* reshape(parent_traits[1:no_param], size(pop_mean)[1], size(pop_mean)[2]) .+ (1-h2[j,col]) .* pop_mean		
 	sigma_offspring_traits = sqrt(1-(h2[j,col])^2)*pop_stdev
+	
 	# MU and SIGMA for lognormal
 	MU = log.(exp_offspring_traits.^2 ./ sqrt.(sigma_offspring_traits.^2 .+ exp_offspring_traits.^2)) 	
 	SIGMA = sqrt.(log.(sigma_offspring_traits.^2 ./ exp_offspring_traits.^2 .+ 1))
