@@ -1,3 +1,10 @@
+"""
+Running this file will install all the Julia packages 
+necessary for running the scripts.
+
+Run this only once in the beginning. 
+"""
+
 using Pkg
 
 Pkg.add("DifferentialEquations")

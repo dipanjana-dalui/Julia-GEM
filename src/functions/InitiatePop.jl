@@ -1,38 +1,4 @@
 
-
-"""
-## instantiate in GEM_Sim code
-struct InitiatePopArg
-N0::Vector{Int64}
-which_par_quant::Matrix{Int64}
-state_geno_match::Matrix{Int64}, 
-state_par_match::Matrix{Int64}, 
-init_comm_mat::Matrix{Float64}, 
-params::Vector{Float64}, 
-cv::Matrix{Float64}, 
-j::Int64
-end
-
-ip_args = InitiatePopArg(
-	N0,
-	which_par_quant,
-	state_geno_match,
-	state_par_match,
-	init_comm_mat,
-	params,
-	cv, 
-	j
-)
-
-pre-allocate o/p matrix
-community_matrix = Matrix{Float64}(undef, total_individuals, 1 + n_params + n_genotypes)
--then you will be saving the result in a comm_mat that will get returned. Make sure it'same
-being saved into an appropiate name for keeping downstream smooth.
-
-No changes needed for the rest.
-
-"""
-
 ##############################################
 #		FUNCTION INITIATE POPULATION         #
 ##############################################
@@ -42,7 +8,7 @@ function InitiatePop(N0::Vector{Int},
 					state_par_match::Matrix{Int}, 
 					init_comm_mat::Matrix{Float64}, 
 					params::Vector{Float64},
-					cv::Matrix{Float64}, 
+					cv::Array{Float64}, 
 					j::Int)
 
 	# some conversions
@@ -51,6 +17,7 @@ function InitiatePop(N0::Vector{Int},
     #geno_par_match = zero_to_nan(geno_par_match)
 	which_par_quant = zero_to_nan(which_par_quant)
 
+	y0 = [10]
 	y0 = N0
 	end_row = cumsum(y0)
 	starting_row = [1; 1 .+ end_row[1:length(end_row)-1]]
@@ -65,7 +32,8 @@ function InitiatePop(N0::Vector{Int},
 		init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 1] .= qq
 		for zz = 1:length(params)
 			if !isnan(params_to_pick[zz,qq]) 
-				temp = PickIndiv(params_to_pick[zz,qq],cv[j, qq]*params_to_pick[zz, qq],Int(traits_to_assign[qq,zz])) 
+				#temp = PickIndiv(params_to_pick[zz,qq],cv[j, qq]*params_to_pick[zz, qq],Int(traits_to_assign[qq,zz]))
+				temp = PickIndiv(params_to_pick[zz,qq],cv[zz, qq, j]*params_to_pick[zz, qq],Int(traits_to_assign[qq,zz])) 
 			else 
 				#temp = zeros(Int(y0[qq]),1)
 				temp = fill(NaN, Int(y0[qq]),1)
@@ -76,9 +44,9 @@ function InitiatePop(N0::Vector{Int},
 		# ALL? -- JPD: edit please
 		#=if all(gts_to_assign[qq,:] .> 0)
 			 	# makes a matrix with communuty size no. of rows, and number of geno cols
-			genotype = zeros(Int(y0[1]), num_gts) 
+			genotype = zeros(Int(y0[qq]), num_gts) 
 			# go row by row and randomly choose genotype to set to 1
-			for yy = 1:y0[1]
+			for yy = 1:y0[qq]
 				yy = 1
 				temp2 = rand(1:num_gts) # try this alt temp = rand(1:num_gts, 1)
 				genotype[yy, temp2] = 1

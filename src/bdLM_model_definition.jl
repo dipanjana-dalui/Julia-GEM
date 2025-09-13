@@ -43,7 +43,7 @@ function Event_Terms(param_next::Matrix{Float64}, R::Vector{Int})
     b_max = param_next[1,1] # max birth
     d_min = param_next[1,2] # min death
     b_s = param_next[1,3] # density dependence of birth
-    d_s = param_next[1,4]
+    d_s = param_next[1,4] # density dependence of death 
 
     birth =  Birth(b_max, b_s, R)
     death =  Death(d_min, d_s, R)
@@ -61,18 +61,6 @@ mutable struct InitState
     N::Vector{Int}
 end
 
-#=
-    2. ModelParameters{T}
-This struct holds the model initial parameters. These are not mutable 
-
-struct ModelParameters{Float64}
-    b_max::Float64  # Maximum birth rate of prey
-    d_min::Float64  # Minimum death rate of prey
-    b_s::Float64    # Density dependence of birth
-    d_s::Float64    # Density dependence of death
-end
-=#
-
 """
     2. ModelParVector
 """
@@ -87,6 +75,12 @@ Eco-evo choices
 struct DesignChoice
     h2::Matrix{Float64}
     cv::Matrix{Float64}
+    GEM_ver::Vector{String}
+end
+
+struct DesignChoices
+    h2::Array{Float64}
+    cv::Array{Float64}
     GEM_ver::Vector{String}
 end
 

@@ -7,8 +7,6 @@ end
 
 ## function to set a threshold for zero
 function deci_threshold(df::DataFrame)
-	#trait = trait_mean_df.b_max
-	#round.(trait_mean_df.b_max, digits=4)
 
 	df_mod = mapcols(col -> round.(col, digits=8), df)
 	return df_mod
@@ -114,10 +112,10 @@ function make_trait_df_long(sim_output::GEMOutput,
         x_out_var_spp_store[k] = vcat(x_out_var_gem_v_store...)
     end
     
-    par_mean_df = vcat(x_out_spp_store...)
+    par_median_df = vcat(x_out_spp_store...)
     par_var_df = vcat(x_out_var_spp_store...)
 
-    return (mean=deci_threshold(par_mean_df), var=deci_threshold(par_var_df))
+    return (median=deci_threshold(par_median_df), var=deci_threshold(par_var_df))
 
 end
 
