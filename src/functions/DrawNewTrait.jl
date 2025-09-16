@@ -3,9 +3,7 @@
 ##############################################
 function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64}, 
 						h2::Array{Float64}, no_param::Int64, no_columns::Int64, col::Int64, j::Int64)
-#function DrawNewTraits(p::DNTArgs)
 
-#    @unpack x_dist, parent_traits, h2, no_param, no_columns, col, j = p
 
 	pop_size = size(x_dist[x_dist[:, 1] .== col, 2:no_param+1])
 	# QUANTITATIVE TRAITS
@@ -37,9 +35,7 @@ function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64},
 		end
 	end
 	
-	## JPD: edit this please
 	offspring_genotypes = collect(transpose(parent_traits[no_param+1:no_columns-1]))
-	##### what happens to genotype?
 
 	return (offspring_traits=offspring_traits, offspring_genotype=offspring_genotypes)
 end

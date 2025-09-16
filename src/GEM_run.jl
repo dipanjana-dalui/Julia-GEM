@@ -1,7 +1,6 @@
 """ 
 This file provides the space to run your GEM 
 """
-
 # run only once the first time
 # include("install_pkgs.jl")
 
@@ -39,4 +38,4 @@ trait_dat.var
 Pop_Plot(run_sim.pop_df, 1)
 
 # Trait_Plot(mean, var, stateID, "trait name")
-Trait_Plot(trait_dat.median, trait_dat.var, 1, "b_s")
+Trait_Plot(trait_dat.median, trait_dat.var, 1, "g_1")

@@ -7,7 +7,6 @@ end
 
 ## function to set a threshold for zero
 function deci_threshold(df::DataFrame)
-
 	df_mod = mapcols(col -> round.(col, digits=8), df)
 	return df_mod
 end
@@ -73,9 +72,7 @@ function make_trait_df_long(sim_output::GEMOutput,
 
 
     for k = 1:no_species
-        #k = 2
         for i = 1:length(GEM_ver)
-            #i = 1
             for j = 1:num_rep
                 col_df = DataFrame(hcat(stand_time,
                         fill(j,num_time_steps),

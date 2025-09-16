@@ -23,7 +23,7 @@ function WhoIsNext(x_dist::Matrix{Float64}, no_species::Int64, no_columns::Int64
 			whosnext[zz] = ind_in_state[which_row]
 			param_next[zz, which_params] = x_dist[Int(whosnext[zz]), 1 .+ which_params]
 			genotype_next[zz,which_genotype] = x_dist[Int(whosnext[zz]), 2 .+ no_param:no_columns]
-		#else
+		#else	
 			#param_next[zz, which_params] = 0 #param_next[zz, which_params] 
 			#genotypes_next[zz,which_genotypes] = 0 # if pop is gone, set genotypes to 0
 		end

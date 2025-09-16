@@ -4,7 +4,6 @@
 
 # Function to run a single replicate
 function run_replicate(init_state::InitState,
-                        #mod_par::ModelParameters,
                         mod_par_vect::ModelParVector,
                         dc::DesignChoices,
                         sim_map::SimulationMap,
@@ -44,11 +43,13 @@ function run_replicate(init_state::InitState,
         params, 
         cv, 
         j)
+        
     # Store initial state details
     for ii = 1:no_species
         x_slice[:, 1, ii] = CalcMedian(ii, no_columns, no_param, x_dist_init)
         x_var_slice[1:no_param, 1, ii] = CalcVar(ii, no_param, x_dist_init)
     end
+    
 
     # count up each individual for all states after the first sampling
     for jj = 1:length(N)
@@ -66,27 +67,27 @@ function run_replicate(init_state::InitState,
         param_next = FindWhoNext.param_next # FindWhoNext[1]; Using named tuple for cleaner access
         genotype_next = FindWhoNext.genotype_next # FindWhoNext[2]
         whosnext = FindWhoNext.whosnext # FindWhoNext[3]
-        
+
         """ Func Event Terms """
         terms = collect(Event_Terms(param_next, N))
         
         """ Func Pick Event """
         picked_event = PickEvent(terms, no_species)
         c_sum = picked_event.c_sum # PickedEvent[1]
-        row = picked_event.row # PickedEvent[2]
-        col = picked_event.col # PickedEvent[3]
-        #@show PickedEvent
-        if row == 1 #&& col == 1
+        row = picked_event.row # row 1: birth, row 2: death
+        col = picked_event.col # sstate
+        
+        if row == 1 # birth
             parent_traits = x_dist[Int(whosnext[col]), 2:no_columns] 
             #@show parent_traits   
                  """ Draw New Trait """     
             new_trait = DrawNewTraits(x_dist,parent_traits,h2,no_param,no_columns,col, j)
-                    
+                   
             new_trait_row = hcat(col, new_trait)
             new_trait_row = hcat(new_trait_row[1],new_trait_row[2][1],new_trait_row[2][2])
             x_dist = vcat(x_dist, new_trait_row) 
         
-        elseif row == 2 #&& col ==1 # death 
+        elseif row == 2 1 # death 
             # delete the individual by making a new copy of the matrix
             # without the row 
             x_dist = x_dist[1:size(x_dist, 1) .!= Int(whosnext[col]), :]
@@ -116,6 +117,7 @@ function run_replicate(init_state::InitState,
             break
             println("Time advance error. Stopped at time:\nT $T")
         end
+       
 
         # store the last value of the replicate
         pop_slice[1:no_species, time_step_index] = N
@@ -151,7 +153,6 @@ function GEM_sim(init_state::InitState,
     @unpack num_rep, t_max, no_species, no_columns, no_param, num_time_steps,min_time_step_to_store  = sim_par    
     @unpack pop_stand_out_all, x_stand_out_all, x_var_stand_out_all = sim_op
     
-    # Use `@threads` for multi-threading
     for j = 1:length(GEM_ver) # loop through the GEM versions
 
         # some internal containers
@@ -159,13 +160,12 @@ function GEM_sim(init_state::InitState,
         x_stand = fill(NaN, no_columns - 1, num_time_steps, no_species, num_rep)
         x_var_stand = fill(NaN, no_columns - 1, num_time_steps, no_species, num_rep)
         
-        #Threads.@threads 
-        for i = 1:num_rep # loop through the replicates
-            @show j
-            @show i
-            @show Threads.threadid()
-            pop_slice, x_slice, x_var_slice = run_replicate(init_state, mod_par_vect, design_choices, mappings, 
-                sim_params,j)
+        Threads.@threads for i = 1:num_rep # loop through the replicates
+            #@show j
+            #@show i
+            @show Threads.threadid()            
+            pop_slice, x_slice, x_var_slice = run_replicate(init_state, mod_par_vect, dc, sim_map, 
+                sim_par,j)
             pop_stand[:, :, i] .= pop_slice
             x_stand[:, :, :, i] .= x_slice
             x_var_stand[:, :, :, i] .= x_var_slice
