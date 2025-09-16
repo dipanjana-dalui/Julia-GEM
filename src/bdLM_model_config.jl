@@ -51,18 +51,12 @@ no_param = length(param_vect)
 GEM_ver = ["ver1", "ver2"] # number of GEM version
 #h2 = [0.0 0.0; 0.1 0.1] ## rows: GEM versions, cols: state ID
 #cv = [0.0 0.0; 0.2 0.2] ## rows: GEM versions, cols: state ID
-h2_vect = [0.0;
-        0.2] # narrow sense heritability
-#h2 = reshape(h2_vect, length(GEM_ver), no_species)
+h2 = [ 0.0;
+       0.2 ] # narrow sense heritability
 
-#cv_vect = [0.0;
-#        0.2] # coefficient of variation
-#cv = reshape(cv_vect, length(GEM_ver), no_species)
-
-cv_vect = cat([ 0.0 0.0 0.0 0.0;
-                0.0 0.0 0.0 0.0],
-              [ 0.3 0.1 0.0 0.0;
-                0.0 0.0 0.1 0.0], dims=3)
+# cv = array{state ID, length(param), GEM ver}
+cv = cat([ 0.0 0.0 0.0 0.0],
+         [ 0.3 0.1 0.0 0.0], dims=3)
 
 #= 4×1×2 Array{Float64, 3}: row: state; col = param; stack = GEM ver
 [:, :, 1] =
@@ -73,11 +67,11 @@ cv_vect = cat([ 0.0 0.0 0.0 0.0;
 
 # mapping arrays; row = state; col = param
 state_par_match = Array{Int64}([1 1 1 1]) # matching parameters to state
-state_geno_match = Array{Int64}([1 0 0 0]) # matching genotype to state
-geno_par_match = Array{Int64}([0 0 0 0]) # connection b/w parameter and genotype
+state_geno_match = Array{Int64}([1 0 0]) # matching genotype to state
+geno_par_match =   Array{Int64}([0 0 0 0]) # connection b/w parameter and genotype
 which_par_quant = state_par_match - geno_par_match
 no_columns = no_param + 1 + size(state_geno_match, 2) 
-geno_names = ["g_1", "g_2", "g_3", "g_4"] # genotype name
+geno_names = ["g_1", "g_2", "g_3"] # genotype name
 
 # replicate and time
 num_rep = 2 # number of replicates
@@ -108,7 +102,7 @@ model_par_vect = ModelParVector(
 )
 
 """ 3. Instantiate DesignChoices """
-design_choices = DesignChoice(
+design_choices = DesignChoices(
     h2, # Matrix{Float64}
     cv,  # Matrix{Float64}
     GEM_ver # Vector{String}

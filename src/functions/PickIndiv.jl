@@ -3,7 +3,7 @@
 ##############################################
 ## This function picks individuals with mean parameter, and std parameter * cv 
 
-function PickIndiv(x::T, std::T, N::Int) where T <: AbstractFloat
+function PickIndiv(x::Float64, std::Float64, N::Int) 
 	# this picks N traits with mean x and std deviation stand
 	MU = log(x .^2 ./ sqrt(std .^2 + x .^2))
 	SIGMA = sqrt(log(std .^2 ./x .^2 + 1))

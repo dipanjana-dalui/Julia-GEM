@@ -6,7 +6,7 @@
 function run_replicate(init_state::InitState,
                         #mod_par::ModelParameters,
                         mod_par_vect::ModelParVector,
-                        dc::DesignChoice,
+                        dc::DesignChoices,
                         sim_map::SimulationMap,
                         sim_par::SimulationParameters,
                         j::Int)
@@ -37,13 +37,13 @@ function run_replicate(init_state::InitState,
     x_dist_init = InitiatePop(
         N0, 
         which_par_quant, 
+        geno_par_match,
         state_geno_match, 
         state_par_match, 
         init_comm_mat,
         params, 
         cv, 
         j)
-    
     # Store initial state details
     for ii = 1:no_species
         x_slice[:, 1, ii] = CalcMedian(ii, no_columns, no_param, x_dist_init)
@@ -139,7 +139,7 @@ end
 # Main simulation function
 function GEM_sim(init_state::InitState,
                         mod_par_vect::ModelParVector,
-                        dc::DesignChoice,
+                        dc::DesignChoices,
                         sim_map::SimulationMap,
                         sim_par::SimulationParameters,
                         sim_op::GEMOutput)
@@ -152,16 +152,18 @@ function GEM_sim(init_state::InitState,
     @unpack pop_stand_out_all, x_stand_out_all, x_var_stand_out_all = sim_op
     
     # Use `@threads` for multi-threading
-    Threads.@threads for j = 1:length(GEM_ver) # loop through the GEM versions
+    for j = 1:length(GEM_ver) # loop through the GEM versions
 
         # some internal containers
         pop_stand = zeros(no_species, num_time_steps, num_rep)
         x_stand = fill(NaN, no_columns - 1, num_time_steps, no_species, num_rep)
         x_var_stand = fill(NaN, no_columns - 1, num_time_steps, no_species, num_rep)
         
-        Threads.@threads for i = 1:num_rep # loop through the replicates
+        #Threads.@threads 
+        for i = 1:num_rep # loop through the replicates
             @show j
             @show i
+            @show Threads.threadid()
             pop_slice, x_slice, x_var_slice = run_replicate(init_state, mod_par_vect, design_choices, mappings, 
                 sim_params,j)
             pop_stand[:, :, i] .= pop_slice

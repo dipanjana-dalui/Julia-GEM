@@ -17,7 +17,7 @@ end
 
 function make_pop_df_long(sim_output::GEMOutput,
                         sim_par::SimulationParameters, 
-                        dc::DesignChoice )
+                        dc::DesignChoices )
     @unpack pop_stand_out_all = sim_output
     @unpack t_max, no_species, no_columns, no_param, num_time_steps,min_time_step_to_store, num_rep  = sim_par    
     @unpack GEM_ver = dc
@@ -47,7 +47,7 @@ end
 
 function make_trait_df_long(sim_output::GEMOutput,
                                 sim_par::SimulationParameters, 
-                                dc::DesignChoice,
+                                dc::DesignChoices,
                                 sim_map::SimulationMap )
                                 
     @unpack x_stand_out_all,x_var_stand_out_all = sim_output
