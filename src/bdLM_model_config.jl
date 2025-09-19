@@ -1,20 +1,28 @@
 """
-This file confures the model and the simulation.
+This is the model configuration file. There are 3 parts to this document.
+1. Initia state and parameter choices 
+2. Instantiate 
 """
+
+# ======================================================================
+# function to sample from a lognormal distribution 
+using Distributions
+include("functions/PickTrait.jl") 
+
+# Set seed for reproducibility
+using Random
+Random.seed!(42)
 
 # ======================================================================
 #                    INITIAL STATE AND PARAMETERS
 # ======================================================================
 
-# Set seed for reproducibility
-Random.seed!(42)
-
-N_init = [10]
+N_init = [ 10 ] # initial abundances (the array takes integer values)
 
 # bd-logistic parameters distribution mu and sigma
 # maximum birth
 b_max_mu = 4.0
-b_max_sigma = 0.1
+b_max_sigma = 0.0
 
 # minimum death
 d_min_mu = 1.0
@@ -31,8 +39,6 @@ d_s_sigma = 0.0
 
 # randomly draw one sample from the lognormal distrinution
 # (see PickTrait.jl for MU and SIGMA transformations )
-include("functions/PickTrait.jl") # load sampling function
-
 b_max = PickTrait(b_max_mu, b_max_sigma)  # max birth
 d_min = PickTrait(d_min_mu, d_min_sigma) # min death
 b_s = PickTrait(b_s_mu, b_s_sigma) # density dependence of birth
@@ -44,48 +50,50 @@ K = floor(((b_max - d_min)/(b_s + d_s)))
 
 param_vect = [b_max, d_min, b_s, d_s] # parameter vector 
 par_names = ["b_max", "d_min", "b_s", "d_s"] # parameter names
-no_species = length(N_init) 
-no_param = length(param_vect) 
+no_state = length(N_init) # number of states (do not edit)
+no_param = length(param_vect) # number of params (do not edit)
 
-# overall simulation design
-GEM_ver = ["ver1", "ver2"] # number of GEM version
-#h2 = [0.0 0.0; 0.1 0.1] ## rows: GEM versions, cols: state ID
-#cv = [0.0 0.0; 0.2 0.2] ## rows: GEM versions, cols: state ID
-h2 = [ 0.0;
-       0.2 ] # narrow sense heritability
-
-# cv = array{state ID, length(param), GEM ver}
-cv = cat([ 0.0 0.0 0.0 0.0],
-         [ 0.3 0.1 0.0 0.0], dims=3)
-
-#= 4×1×2 Array{Float64, 3}: row: state; col = param; stack = GEM ver
-[:, :, 1] =
- 0.0  0.0  0.0  0.0
-[:, :, 2] =
- 0.2  0.1  0.0  0.0
- =#
-
-# mapping arrays; row = state; col = param
-state_par_match = Array{Int64}([1 1 1 1]) # matching parameters to state
-state_geno_match = Array{Int64}([1 0 0]) # matching genotype to state
-geno_par_match =   Array{Int64}([0 0 0 0]) # connection b/w parameter and genotype
-which_par_quant = state_par_match - geno_par_match
-no_columns = no_param + 1 + size(state_geno_match, 2) 
+# ===================================================================
+# mapping arrays 
+# nrow = state; ncol = param
+state_par_match = [1 1 1 1] # matching parameters to state
+# nrow = state, ncol = genotype 
+state_geno_match = [1 0 0] # matching genotype to state
 geno_names = ["g_1", "g_2", "g_3"] # genotype name
+no_columns = no_param + 1 + size(state_geno_match, 2) # do not edit
+
+# ===================================================================
+# simulation design choices
+GEM_ver = ["ver1", "ver2", "ver3"] # number of GEM versions
+# nrow: state; ncol  = GEM ver
+h2 = [ 0.0 0.2 0.3 ] # narrow sense heritability
+# cv = array{state ID, length(param), GEM ver}
+"""
+Note: The first stack is for GEM ver 1; typically reserved for "no-evolution". All elements are set to 0.0
+In stack 2, set cv value for parameters corresponding to each state. 
+You can mirror the dimensions of state_parameter_match matrix defined above. 
+1 -> cv value
+0 -> n/a for this state
+"""
+cv = cat([ 0.0 0.0 0.0 0.0],
+         [ 0.3 0.1 0.0 0.0],
+         [ 0.2 0.2 0.2 0.2], dims=3)
+
+# =================================================================== 
 
 # replicate and time
-num_rep = 2 # number of replicates
-t_max = 5.0 # maximum time 
-min_time_step_to_store = 0.5 #
-stand_time = range(0, t_max, step = min_time_step_to_store) 
-stand_time = collect(stand_time)
-num_time_steps = length(stand_time)
+num_rep = 5 # number of replicates
+t_max = 50.0 # maximum time 
+min_time_step_to_store = 0.5 # time points when data is stored
+stand_time = range(0, t_max, step = min_time_step_to_store) # standadized number of time points across all runs (do not edit)
+stand_time = collect(stand_time) # do not edit
+num_time_steps = length(stand_time) # do not edit
 
-
-# storage containers
-pop_stand_out_all = fill(NaN, no_species, num_time_steps, num_rep, length(GEM_ver))
-x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
-x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
+# ===================================================================
+# storage containers (do not edit)
+pop_stand_out_all = fill(NaN, no_state, num_time_steps, num_rep, length(GEM_ver))
+x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
+x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
 
 
 # ======================================================================
@@ -98,7 +106,7 @@ N0 = InitState(N_init) # Vector{Int}
 
 """ 2. Instantiate ModelParVector """
 model_par_vect = ModelParVector(
-    param_vect # Vector{T}
+    param_vect # Vector{Float64}
 )
 
 """ 3. Instantiate DesignChoices """
@@ -109,18 +117,16 @@ design_choices = DesignChoices(
 )
 
 """ 4. Instantiate SimulationMap """
-mappings = SimulationMap(
+mappings = SimulationMaps(
     state_par_match, # Matrix{Int}
     state_geno_match, # Matrix{Int}
-    geno_par_match, # Matrix{Int}
-    which_par_quant, # Matrix{Int}
     par_names, # Vector{String}
     geno_names # Vector{String}
 )
 
 """  5. Instantiate SimulationParameters """
-sim_params = SimulationParameters(
-    no_species, # Int
+sim_params = SimulationParameter(
+    no_state, # Int
     no_param, # Int
     no_columns,  # Int 
     num_time_steps, #Int

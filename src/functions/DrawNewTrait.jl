@@ -1,6 +1,7 @@
-##############################################
+# ========================================== #
 #		  FUNCTION DRAW NEW TRAITS           #
-##############################################
+# ========================================== #
+
 function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64}, 
 						h2::Array{Float64}, no_param::Int64, no_columns::Int64, col::Int64, j::Int64)
 
@@ -17,8 +18,8 @@ function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64},
 	pop_var = round.(pop_var, digits=6)
 	pop_stdev = round.(sqrt.(pop_var), digits=6)
 
-	exp_offspring_traits = h2[j,col] .* reshape(parent_traits[1:no_param], size(pop_mean)[1], size(pop_mean)[2]) .+ (1-h2[j,col]) .* pop_mean		
-	sigma_offspring_traits = sqrt(1-(h2[j,col])^2)*pop_stdev
+	exp_offspring_traits = h2[col,j] .* reshape(parent_traits[1:no_param], size(pop_mean)[1], size(pop_mean)[2]) .+ (1-h2[col,j]) .* pop_mean		
+	sigma_offspring_traits = sqrt(1-(h2[col,j])^2)*pop_stdev
 	
 	# MU and SIGMA for lognormal
 	MU = log.(exp_offspring_traits.^2 ./ sqrt.(sigma_offspring_traits.^2 .+ exp_offspring_traits.^2)) 	

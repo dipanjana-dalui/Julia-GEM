@@ -1,34 +1,40 @@
-## Function to convert 0s to NaN in matrix
+# ========================================== #
+#   Function to convert 0s to NaN in matrix  #
+# ========================================== #
+
 function zero_to_nan(Bool_mat::Matrix{Int64})
 	return [x==0 ? NaN : x for x in Bool_mat]
 end
 
 # =============================================================
-
-## function to set a threshold for zero
+# ========================================== #
+#    function to set a threshold for zero    #
+# ========================================== #
 function deci_threshold(df::DataFrame)
 	df_mod = mapcols(col -> round.(col, digits=8), df)
 	return df_mod
 end
 
 # =============================================================
-
+# ========================================== #
+#         dataframe con=nvert functions      #
+# ========================================== #
 
 function make_pop_df_long(sim_output::GEMOutput,
-                        sim_par::SimulationParameters, 
+                        sim_par::SimulationParameter, 
                         dc::DesignChoices )
     @unpack pop_stand_out_all = sim_output
-    @unpack t_max, no_species, no_columns, no_param, num_time_steps,min_time_step_to_store, num_rep  = sim_par    
+    @unpack t_max, no_state, no_columns, no_param, num_time_steps,min_time_step_to_store, num_rep  = sim_par    
     @unpack GEM_ver = dc
 
 
     pop_out = vec(pop_stand_out_all)
-    pop_out_mat = reshape(pop_out, no_species, num_time_steps, num_rep, length(GEM_ver))
+    pop_out_mat = reshape(pop_out, no_state, num_time_steps, num_rep, length(GEM_ver))
 
     pop_out_gem_v_store = Vector{DataFrame}(undef, length(GEM_ver)) 
-    pop_out_spp_store = Vector{DataFrame}(undef, no_species)
+    pop_out_spp_store = Vector{DataFrame}(undef, no_state)
 
-    for k = 1:no_species
+    for k = 1:no_state
         for i = 1:length(GEM_ver)
             temp = DataFrame(hcat(stand_time, fill(i,num_time_steps),
                             fill(k,num_time_steps)),:auto)
@@ -45,33 +51,33 @@ end
 # =============================================================
 
 function make_trait_df_long(sim_output::GEMOutput,
-                                sim_par::SimulationParameters, 
+                                sim_par::SimulationParameter, 
                                 dc::DesignChoices,
-                                sim_map::SimulationMap )
+                                sim_map::SimulationMaps)
                                 
     @unpack x_stand_out_all,x_var_stand_out_all = sim_output
-    @unpack t_max, no_species, no_columns, no_param, num_time_steps,min_time_step_to_store, num_rep  = sim_par    
+    @unpack t_max, no_state, no_columns, no_param, num_time_steps,min_time_step_to_store, num_rep  = sim_par    
     @unpack GEM_ver = dc
     @unpack par_names, geno_names = sim_map
 
     x_out = vec(x_stand_out_all)
     x_out_var = vec(x_var_stand_out_all)
 
-    x_out_mat = reshape(x_out, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
-    x_out_var_mat = reshape(x_out_var, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
+    x_out_mat = reshape(x_out, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
+    x_out_var_mat = reshape(x_out_var, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
  
     col_names = vcat(par_names, geno_names)
     
-    x_out_spp_store = Vector{DataFrame}(undef, no_species)
+    x_out_spp_store = Vector{DataFrame}(undef, no_state)
     x_out_gem_v_store = Vector{DataFrame}(undef, length(GEM_ver)) 
     x_out_rep_store = Vector{DataFrame}(undef, num_rep)
 
-    x_out_var_spp_store = Vector{DataFrame}(undef, no_species)
+    x_out_var_spp_store = Vector{DataFrame}(undef, no_state)
     x_out_var_gem_v_store = Vector{DataFrame}(undef, length(GEM_ver)) 
     x_out_var_rep_store = Vector{DataFrame}(undef, num_rep)
 
 
-    for k = 1:no_species
+    for k = 1:no_state
         for i = 1:length(GEM_ver)
             for j = 1:num_rep
                 col_df = DataFrame(hcat(stand_time,
@@ -90,7 +96,7 @@ function make_trait_df_long(sim_output::GEMOutput,
         x_out_spp_store[k] = vcat(x_out_gem_v_store...)
     end
 
-    for k = 1:no_species
+    for k = 1:no_state
         for i = 1:length(GEM_ver)
             for j = 1:num_rep
                 col_df = DataFrame(hcat(stand_time,

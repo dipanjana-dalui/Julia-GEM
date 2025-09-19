@@ -30,11 +30,11 @@ K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
 """
 Define the birth and death terms for each state below. 
 """
-function Birth(b_max, b_s, R)
+function Birth(b_max::Float64, b_s::Float64, R::Vector{Int})
     b_new = max((b_max - b_s*R[1])*R[1],0)
 end
 
-function Death(d_min, d_s, R)
+function Death(d_min::Float64, d_s::Float64, R::Vector{Int})
     d_new = (d_min + d_s*R[1])*R[1]
 end
 
@@ -52,6 +52,7 @@ end
 
 # ======================================================================
 #          3.  STRUCTURES
+# only make changes to the following block if you are addint new struct
 # ======================================================================
 """
     1. InitState
@@ -72,11 +73,6 @@ end
     3. DesignChoices{T}
 Eco-evo choices
 """
-struct DesignChoice
-    h2::Matrix{Float64}
-    cv::Matrix{Float64}
-    GEM_ver::Vector{String}
-end
 
 struct DesignChoices
     h2::Array{Float64}
@@ -87,21 +83,18 @@ end
 """
     4. SimulationMapping
 """
-struct SimulationMap
+struct SimulationMaps
     state_par_match::Matrix{Int}
     state_geno_match::Matrix{Int}
-    geno_par_match::Matrix{Int}
-    which_par_quant::Matrix{Int}
     par_names::Vector{String}
     geno_names::Vector{String}
 end
 
 """
     5. SimulationParameters
-Our constants for the simulation
 """
-struct SimulationParameters
-    no_species::Int
+struct SimulationParameter
+    no_state::Int
     no_param::Int
     no_columns::Int 
     num_time_steps::Int

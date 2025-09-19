@@ -1,5 +1,5 @@
 """
-Load packages 
+A list of all packages 
 """
 
 using DifferentialEquations

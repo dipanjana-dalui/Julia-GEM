@@ -1,122 +1,137 @@
+
+using Distributions
+using Random
+include("functions/PickTrait.jl") # load sampling function
+
+# Set seed for reproducibility
+Random.seed!(42)
+
+N_init = [5, 1]
+
+
+b_max_mu = 0.8
+b_max_sigma = 0.0
+d_min_mu = 0.4  
+d_min_sigma = 0.0
+#=
+b_s_mu = 1e-2
+b_s_sigma = 0.0
+d_s_mu = 1e-5
+d_s_sigma = 0.0
+=#
+scr_mu = 0.005
+scr_sigma = 0.0
+fec_mu = 0.05
+fec_sigma = 0.0
+m_mu = 0.01
+m_sigma = 0.0
+
+# randomly draw one sample from the lognormal distrinution
+# (see PickTrait.jl for MU and SIGMA transformations )
+
+b_max = PickTrait(b_max_mu, b_max_sigma)  # max birth
+d_min = PickTrait(d_min_mu, d_min_sigma) # min death
+#b_s = rand(LogNormal(log(b_s_mu), b_s_sigma), 1)[1] # density dependence of birth
+#d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1)[1] # density dependence of death
+scr = PickTrait(scr_mu, scr_sigma)
+fec = PickTrait(fec_mu, fec_sigma)
+m = PickTrait(m_mu, m_sigma)
+# calculate initial constant 
+r_max = b_max-d_min
+#K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
+
+param_vect = [b_max, d_min, scr, fec, m]
+par_names = ["b_max", "d_min", "scr", "fec", "m"]
+no_species = length(N_init) 
+no_param = length(param_vect) 
+
+# Define the mapping arrays
+# nrow = state, ncol = param
+state_par_match = [1 1 0 0 0; 0 0 1 1 1]
+# nrow = state, ncol = genotype 
+state_geno_match = [1 0 0 0; 0 0 1 0] # startng genotype
+
+no_columns = no_param + 1 + size(state_geno_match, 2) 
+geno_names = ["g_1", "g_2", "g_3", "g_4"]
+
+GEM_ver = ["ver1", "ver2"]
+# nrow: state ID, ncol: GEM versions
+h2 = [ 0.0 0.2 ;
+       0.0 0.2 ]# narrow sense heritability
+
+# cv = nrow:state ID, ncol:length(param), stack:GEM ver}
+"""
+Note: The first stack is for GEM ver 1; typically reserved for "no-evolution". All elements are set to 0.0
+In stack 2, set cv value for parameters corresponding to each state. 
+You can mirror the dimensions of state_parameter_match matrix defined above. 
+1 -> cv value
+0 -> n/a for this state
+"""
+
+cv = cat([ 0.0 0.0 0.0 0.0 0.0 ; 0.0 0.0 0.0 0.0 0.0],
+         [ 0.3 0.1 0.0 0.0 0.0 ; 0.0 0.0 0.1 0.1 0.05], dims=3)
+
+
+num_rep = 2
+t_max = 5.0 #upwards of 6 the events times get very very small
+min_time_step_to_store = 0.5
+stand_time = range(0, t_max, step = min_time_step_to_store)
+stand_time = collect(stand_time)
+num_time_steps = length(stand_time)
+
+
+# 
+pop_stand_out_all = fill(NaN, no_species, num_time_steps, num_rep, length(GEM_ver))
+x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
+x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
+
+
 # ======================================================================
-# MAIN SCRIPT EXECUTION
-# This is where we set up the simulation and run it.
-# It's good practice to wrap this in a main function.
+#                             INSTANTIATE 
+# Only make changes to this block if you make changes to the variable 
+# names that are used to instantiate the struct. 
 # ======================================================================
+""" 1. Instantiate the initial population state """
+N0 = InitStates(N_init) # Vector{Int}
 
-#function set_init_conditions()
-    # Set seed for reproducibility
-    Random.seed!(42)
+""" 2. Instantiate ModelParVector """
+model_par_vect = ModelParVector(
+    param_vect # Vector{T}
+)
 
-    N_init = [5, 1]
+""" 3. Instantiate DesignChoices """
+design_choices = DesignChoices(
+    h2, # Matrix{Float64}
+    cv,  # Matrix{Float64}
+    GEM_ver # Vector{String}
+)
 
+""" 4. Instantiate SimulationMap """
+mappings = SimulationMaps(
+    state_par_match, # Matrix{Int}
+    state_geno_match, # Matrix{Int}
+    #geno_par_match, # Matrix{Int}
+    #which_par_quant, # Matrix{Int}
+    par_names, # Vector{String}
+    geno_names # Vector{String}
+)
 
-    b_max_mu = 0.8
-    b_max_sigma = 0.0
-    d_min_mu = 0.4  
-    d_min_sigma = 0.0
-    #=
-    b_s_mu = 1e-2
-    b_s_sigma = 0.0
-    d_s_mu = 1e-5
-    d_s_sigma = 0.0
-    =#
-    scr_mu = 0.005
-    scr_sigma = 0
-    fec_mu = 0.05
-    fec_sigma = 0
-    m_mu = 0.01
-    m_sigma = 0
-
-    b_max = rand(LogNormal(log(b_max_mu), b_max_sigma), 1)[1]  # max birth
-    d_min = rand(LogNormal(log(d_min_mu), d_min_sigma), 1)[1] # min death
-    #b_s = rand(LogNormal(log(b_s_mu), b_s_sigma), 1)[1] # density dependence of birth
-    #d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1)[1] # density dependence of death
-    scr = rand(LogNormal(log(scr_mu), scr_sigma), 1)[1]
-    fec = rand(LogNormal(log(fec_mu), fec_sigma), 1)[1]
-    m = rand(LogNormal(log(m_mu), m_sigma), 1)[1]
-    # calculate initial constant 
-    r_max = b_max-d_min
-    #K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
-
-    param_vect = [b_max, d_min, scr, fec, m]
-    no_species = length(N_init) 
-    no_param = fieldcount(ModelParameters) 
+"""  5. Instantiate SimulationParameters """
+sim_params = SimulationParameters(
+    no_species, # Int
+    no_param, # Int
+    no_columns,  # Int 
+    num_time_steps, #Int
+    num_rep, # Int
+    t_max, # Float64
+    min_time_step_to_store # Float64 
+    )
+""" 6. Instantiate output container """
+sim_output = GEMOutput(
+    pop_stand_out_all, # Array{Float64, 4}
+    x_stand_out_all, # Array{Float64, 5}
+    x_var_stand_out_all # Array{Float64, 5}
+    )
     
-    h2 = [0.0 0.0; 0.1 0.1] ## rows: GEM versions, cols: state ID
-    cv = [0.0 0.0; 0.2 0.2] ## rows: GEM versions, cols: state ID
-    GEM_ver = ["ver1", "ver2"]
-
-    # Define the mapping arrays
-    state_par_match = [1 1 0 0 0; 0 0 1 1 1] #no_col = param_init, no_row = state
-    state_geno_match = [0 0 0 0; 0 0 0 0]
-    geno_par_match = [0 0 0 0 0; 0 0 0 0 0]
-    which_par_quant = state_par_match - geno_par_match
-    no_columns = no_param + 1 + size(state_geno_match, 2) 
-    par_names = ["b_max", "d_min", "scr", "fec", "m"]
-    geno_names = ["g_1", "g_2", "g_3", "g_4"]
-
-    num_rep = 3
-    t_max = 10.0
-    min_time_step_to_store = 0.5
-    stand_time = range(0, t_max, step = min_time_step_to_store)
-    stand_time = collect(stand_time)
-    num_time_steps = length(stand_time)
-
-
-    # 
-    pop_stand_out_all = fill(NaN, no_species, num_time_steps, num_rep, length(GEM_ver))
-    x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
-    x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
 
     
-    """ 1. Instantiate the initial population state """
-    N0 = InitState(N_init)
-    
-    """ 2. Instantiate the model parameters struct with the generated values """
-    model_params = ModelParameters(
-        b_max, 
-        d_min, 
-        scr, 
-        fec, 
-    )
-   
-
-    """ 3. Instantiate DesignChoices """
-    design_choices = DesignChoice(
-        h2, # h2_vect::Matrix{Float64}
-        cv,  # cv_vect::Matrix{Float64}
-        GEM_ver # GEM_ver::Vector{String}
-    )
-
-    """ 4. Instantiate SimulationMap """
-    mappings = SimulationMap(
-        state_par_match,
-        state_geno_match,
-        geno_par_match,
-        which_par_quant,
-        par_names,
-        geno_names
-    )
-
-    """  5. Instantiate SimulationParameters """
-    sim_params = SimulationParameters(
-        no_species, # Int
-        no_param, # Int
-        no_columns,  # Int 
-        num_time_steps, #Int
-        num_rep, # Int
-        t_max, # Float64
-        min_time_step_to_store # Float64 
-        )
-    """ 6. Instantiate output container """
-    sim_output = GEMSimOutput(
-        pop_stand_out_all,
-        x_stand_out_all,
-        x_var_stand_out_all
-        )
-
-    """ 7. Instantiate ModelParVector """
-    model_par_vect = ModelParVector(
-        param_vect
-    )

@@ -2,18 +2,19 @@
     1. Function to run one replication 
 """
 
-# Function to run a single replicate
 function run_replicate(init_state::InitState,
                         mod_par_vect::ModelParVector,
                         dc::DesignChoices,
-                        sim_map::SimulationMap,
-                        sim_par::SimulationParameters,
-                        j::Int)
+                        sim_map::SimulationMaps,
+                        sim_par::SimulationParameter,
+                        j::Int,
+                        verbose::Bool)
     @unpack N = init_state
     @unpack param_init = mod_par_vect
     @unpack h2, cv = dc
-    @unpack state_geno_match, state_par_match, geno_par_match, which_par_quant = sim_map
-    @unpack t_max, no_species, no_columns, no_param, num_time_steps,min_time_step_to_store  = sim_par    
+    #@unpack state_geno_match, state_par_match, geno_par_match, which_par_quant = sim_map
+    @unpack state_geno_match, state_par_match = sim_map
+    @unpack t_max, no_state, no_columns, no_param, num_time_steps,min_time_step_to_store  = sim_par    
 
     # make a copy 
     t = 0.0
@@ -25,9 +26,9 @@ function run_replicate(init_state::InitState,
     
     # some internal container
     init_comm_mat =  Array{Float64}(fill(NaN, Int(sum(N0)), no_columns))
-    pop_slice = Array{Int}(fill(0, no_species, num_time_steps))
-    x_slice = fill(NaN, no_columns-1, num_time_steps, no_species)
-    x_var_slice = fill(NaN, no_columns-1, num_time_steps, no_species)
+    pop_slice = Array{Int}(fill(0, no_state, num_time_steps))
+    x_slice = fill(NaN, no_columns-1, num_time_steps, no_state)
+    x_var_slice = fill(NaN, no_columns-1, num_time_steps, no_state)
 
     # store details of initial state 
     pop_slice[:,1] .= N0 #first col/time step gets the initial pop 
@@ -35,8 +36,6 @@ function run_replicate(init_state::InitState,
     """ Func Initiate Population """
     x_dist_init = InitiatePop(
         N0, 
-        which_par_quant, 
-        geno_par_match,
         state_geno_match, 
         state_par_match, 
         init_comm_mat,
@@ -45,7 +44,7 @@ function run_replicate(init_state::InitState,
         j)
         
     # Store initial state details
-    for ii = 1:no_species
+    for ii = 1:no_state
         x_slice[:, 1, ii] = CalcMedian(ii, no_columns, no_param, x_dist_init)
         x_var_slice[1:no_param, 1, ii] = CalcVar(ii, no_param, x_dist_init)
     end
@@ -63,7 +62,7 @@ function run_replicate(init_state::InitState,
     
     while t < t_max && sum(N) > 0
         """ Func WhoIsNext """
-        FindWhoNext = WhoIsNext(x_dist, no_species, no_columns, no_param, N0, state_par_match, state_geno_match)
+        FindWhoNext = WhoIsNext(x_dist, no_state, no_columns, no_param, N0, state_par_match, state_geno_match)
         param_next = FindWhoNext.param_next # FindWhoNext[1]; Using named tuple for cleaner access
         genotype_next = FindWhoNext.genotype_next # FindWhoNext[2]
         whosnext = FindWhoNext.whosnext # FindWhoNext[3]
@@ -72,7 +71,7 @@ function run_replicate(init_state::InitState,
         terms = collect(Event_Terms(param_next, N))
         
         """ Func Pick Event """
-        picked_event = PickEvent(terms, no_species)
+        picked_event = PickEvent(terms, no_state)
         c_sum = picked_event.c_sum # PickedEvent[1]
         row = picked_event.row # row 1: birth, row 2: death
         col = picked_event.col # sstate
@@ -94,14 +93,14 @@ function run_replicate(init_state::InitState,
         end
 
         # Update abundances 
-        for jj in 1:no_species
+        for jj in 1:no_state
             N[jj] = sum(x_dist[:,1].== jj)
         end
         
         # while loop
         while t > time_step
             pop_slice[:,time_step_index] .= N  # assign current values to sliced standard times
-            for ii in 1:no_species
+            for ii in 1:no_state
                 x_slice[:,time_step_index,ii] = CalcMedian(ii,no_columns,no_param,x_dist)
                 x_var_slice[1:no_param,time_step_index,ii] = CalcVar(ii, no_param, x_dist)
             end
@@ -118,10 +117,13 @@ function run_replicate(init_state::InitState,
             println("Time advance error. Stopped at time:\nT $T")
         end
        
+        if verbose 
+            @show t
+        end
 
         # store the last value of the replicate
-        pop_slice[1:no_species, time_step_index] = N
-        for ii = 1:no_species
+        pop_slice[1:no_state, time_step_index] = N
+        for ii = 1:no_state
             x_slice[:,time_step_index,ii] = CalcMedian(ii,no_columns,no_param,x_dist);
             x_var_slice[1:no_param,time_step_index,ii] = CalcVar(ii, no_param,x_dist)
         end
@@ -138,34 +140,35 @@ end
     2. parallel GEM simulation function
 """
 
-# Main simulation function
 function GEM_sim(init_state::InitState,
                         mod_par_vect::ModelParVector,
                         dc::DesignChoices,
-                        sim_map::SimulationMap,
-                        sim_par::SimulationParameters,
-                        sim_op::GEMOutput)
+                        sim_map::SimulationMaps,
+                        sim_par::SimulationParameter,
+                        sim_op::GEMOutput;
+                        verbose::Bool)
     
     @unpack N = init_state
     @unpack param_init = mod_par_vect
     @unpack h2, cv, GEM_ver = dc
-    @unpack state_geno_match, state_par_match, geno_par_match, which_par_quant = sim_map
-    @unpack num_rep, t_max, no_species, no_columns, no_param, num_time_steps,min_time_step_to_store  = sim_par    
+#    @unpack state_geno_match, state_par_match, geno_par_match, which_par_quant = sim_map
+    @unpack state_geno_match, state_par_match = sim_map
+    @unpack num_rep, t_max, no_state, no_columns, no_param, num_time_steps,min_time_step_to_store  = sim_par    
     @unpack pop_stand_out_all, x_stand_out_all, x_var_stand_out_all = sim_op
     
     for j = 1:length(GEM_ver) # loop through the GEM versions
 
         # some internal containers
-        pop_stand = zeros(no_species, num_time_steps, num_rep)
-        x_stand = fill(NaN, no_columns - 1, num_time_steps, no_species, num_rep)
-        x_var_stand = fill(NaN, no_columns - 1, num_time_steps, no_species, num_rep)
+        pop_stand = zeros(no_state, num_time_steps, num_rep)
+        x_stand = fill(NaN, no_columns - 1, num_time_steps, no_state, num_rep)
+        x_var_stand = fill(NaN, no_columns - 1, num_time_steps, no_state, num_rep)
         
         Threads.@threads for i = 1:num_rep # loop through the replicates
             #@show j
             #@show i
             @show Threads.threadid()            
             pop_slice, x_slice, x_var_slice = run_replicate(init_state, mod_par_vect, dc, sim_map, 
-                sim_par,j)
+                sim_par,j, verbose)
             pop_stand[:, :, i] .= pop_slice
             x_stand[:, :, :, i] .= x_slice
             x_var_stand[:, :, :, i] .= x_var_slice

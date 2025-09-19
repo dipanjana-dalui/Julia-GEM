@@ -1,7 +1,9 @@
-##############################################
-#		  FUNCTION PICK individuals          #
-##############################################
-## This function picks individuals with mean parameter, and std parameter * cv 
+# ========================================== #
+#		  FUNCTION Pick individuals          #
+# ========================================== #
+"""
+This function picks individuals with mean = parameter, and std = parameter * cv 
+"""
 
 function PickIndiv(x::Float64, std::Float64, N::Int) 
 	# this picks N traits with mean x and std deviation stand

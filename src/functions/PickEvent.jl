@@ -1,8 +1,8 @@
-##############################################
+# ========================================== #
 #		  	  FUNCTION PICK EVENTS           #
-##############################################
+# ========================================== #
 
-function PickEvent(terms::Vector{Float64}, no_species::Int)
+function PickEvent(terms::Vector{Float64}, no_state::Int)
 
     terms = reshape(terms, 1, length(terms)) #reshape(ele_to_reshape, new_row, new_col)
 	c_sum = cumsum(terms, dims=2)  
@@ -11,7 +11,7 @@ function PickEvent(terms::Vector{Float64}, no_species::Int)
 	
 	less_than = r_num .< pie_slices  #BitMatrix
 	less_than = collect(less_than)  #Matrix{Bool}
-	event_mat = reshape(less_than, :, no_species) #reshaped Matrix{Bool}
+	event_mat = reshape(less_than, :, no_state) #reshaped Matrix{Bool}
 	
 	row = -1
 	col = -1

@@ -1,5 +1,5 @@
 """
-Functions
+A list of all functions
 """
 # the core GEM simulation function. 
 include("GEM_main.jl")

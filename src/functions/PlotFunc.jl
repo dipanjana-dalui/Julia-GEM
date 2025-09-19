@@ -1,6 +1,6 @@
-##############################################
+# ========================================== #
 #		        PLOT FUNCtions               #
-##############################################
+# ========================================== #
 
 function Pop_Plot(pop_time::DataFrame, i::Int64)
     pop_time = pop_time[pop_time.state_ID .== i, :]
@@ -15,7 +15,7 @@ function Pop_Plot(pop_time::DataFrame, i::Int64)
         row = :GEM_ver => nonnumeric 
         ) *
         visual(Lines, color = :grey)
-    draw(pop_plot, axis=(xlabel="Time", ylabel="Population abundances"))    
+    draw(pop_plot, axis=(xlabel="time", ylabel="population abundances"))    
 end
 
 
@@ -61,10 +61,37 @@ function Trait_Plot(mediandf::DataFrame, vardf::DataFrame,
     )    * visual(Band, color = :lightgrey, alpha=0.5)
 
     tempplot = data(df2plot) * (median_plot + var_plot)
-    finalplot = draw(tempplot, axis=(xlabel="Time", ylabel="Trait value"))
+    finalplot = draw(tempplot, axis=(xlabel="time", ylabel="median trait value"))
 
     return finalplot
 end
 
-#phase plane plot - to be added
- 
+
+function Geno_Freq_Plot(freqdf::DataFrame, 
+                        spID::Int64, 
+                        trait_to_plot::String )
+
+    #pick the right GEM version number and state ID
+    freqdf = freqdf[freqdf.state_ID .== spID, :]
+   
+    #pick the trait wanted
+    freqtemp = freqdf[:, [:time, :rep, :GEM_ver]]
+    freqtemp2 = freqdf[:,trait_to_plot]
+    freq2plot = hcat(freqtemp, freqtemp2)
+
+    
+    rename!(freq2plot, :x1 => :freq)
+
+    freq_plot = data(freq2plot) * mapping(
+        :time,
+        :freq,
+        #color = :rep,
+        group = :rep => nonnumeric,
+        row = :GEM_ver => nonnumeric
+    ) * visual(Lines, color = :grey)
+        
+
+    finalplot = draw(freq_plot, axis=(xlabel="time", ylabel="genotype frequency"))
+
+    return finalplot
+end
