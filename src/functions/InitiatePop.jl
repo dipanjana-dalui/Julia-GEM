@@ -18,11 +18,16 @@ function InitiatePop(N0::Vector{Int},
 	end_row = cumsum(y0)
 	starting_row = [1; 1 .+ end_row[1:length(end_row)-1]]
 	n_sp = length(y0)
+
+	# traits
 	traits_to_assign = state_par_match .* y0 # it accounts for the no. indiv / spp
 	params_to_pick = collect(transpose(state_par_match .* repeat(params', n_sp, 1)))
 
+	# genotypes
 	gts_to_assign = state_geno_match .* y0
 	num_gts = size(state_geno_match, 2) 
+
+	# picking new individual: loop through state and parameter to pick individuals and traits with the correct cv
 	for qq = 1:n_sp
 		init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 1] .= qq
 		for zz = 1:length(params)

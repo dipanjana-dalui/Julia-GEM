@@ -1,5 +1,6 @@
 """ 
-This file provides the space to run your GEM model 
+This file provides the space to run your GEM model.
+Before you start, please read README.txt
 """
 # run only once the first time
 # include("install_pkgs.jl")
@@ -9,19 +10,18 @@ include("functions/Packages.jl")
 
 # load model definition  
 include("bdLM_model_definition.jl") 
-#include("2spp_model_definition.jl")
+# include("2spp_model_definition.jl") # 2 state example model definition file
 
 # load model configuration
 include("bdLM_model_config.jl")
-#include("2spp_model_config.jl")
+# include("2spp_model_config.jl") # 2 state example model configuration file 
 
 # load all functions 
 include("functions/GEM_Functions.jl")
 
 # run the GEM simulation
 
-using Dates
-current_time = now()
+
 run_sim = GEM_sim(
                   N0, # initial state
                   model_par_vect, # model parameters in a vector
@@ -33,7 +33,7 @@ run_sim = GEM_sim(
                   ) #
 
 
-current_time = now()
+
 # output: 
 # Tuple{Array{Float64, 4}, Array{Float64, 5}, Array{Float64, 5}}
 

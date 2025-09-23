@@ -1,28 +1,30 @@
-
+# ======================================================================
+# function to sample from a lognormal distribution 
 using Distributions
-using Random
-include("functions/PickTrait.jl") # load sampling function
+include("functions/PickTrait.jl") 
 
 # Set seed for reproducibility
+using Random
 Random.seed!(42)
 
+# ======================================================================
+#                    INITIAL STATE AND PARAMETERS
+# ======================================================================
+# initial states [prey, predator]
 N_init = [5, 1]
-
-
+# prey birth 
 b_max_mu = 0.8
 b_max_sigma = 0.0
+#prey death 
 d_min_mu = 0.4  
 d_min_sigma = 0.0
-#=
-b_s_mu = 1e-2
-b_s_sigma = 0.0
-d_s_mu = 1e-5
-d_s_sigma = 0.0
-=#
+# space clearance rate 
 scr_mu = 0.005
 scr_sigma = 0.0
+# predator fecundity/efficiency 
 fec_mu = 0.05
 fec_sigma = 0.0
+# predator mortality 
 m_mu = 0.01
 m_sigma = 0.0
 
@@ -42,7 +44,7 @@ r_max = b_max-d_min
 
 param_vect = [b_max, d_min, scr, fec, m]
 par_names = ["b_max", "d_min", "scr", "fec", "m"]
-no_species = length(N_init) 
+no_state = length(N_init) 
 no_param = length(param_vect) 
 
 # Define the mapping arrays
@@ -92,7 +94,7 @@ x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep,
 # names that are used to instantiate the struct. 
 # ======================================================================
 """ 1. Instantiate the initial population state """
-N0 = InitStates(N_init) # Vector{Int}
+N0 = InitState(N_init) # Vector{Int}
 
 """ 2. Instantiate ModelParVector """
 model_par_vect = ModelParVector(
@@ -117,8 +119,8 @@ mappings = SimulationMaps(
 )
 
 """  5. Instantiate SimulationParameters """
-sim_params = SimulationParameters(
-    no_species, # Int
+sim_params = SimulationParameter(
+    no_state, # Int
     no_param, # Int
     no_columns,  # Int 
     num_time_steps, #Int

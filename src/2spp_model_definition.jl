@@ -26,53 +26,32 @@ r_max = b_max-d_min
 
 """
 # ======================================================================
-# BIRTH-DEATH FUNCTIONS
+#                       BIRTH-DEATH FUNCTIONS
 # ======================================================================
-"""
-Issues with defining the functions with struct ModelParamsters:
- - the functions below will go to struct ModelParameters 
- and look for b_max. But when being used to calculate the
-event_terms, we don't have a struct. It will pull the 
-b_max value from the param_next structured created evolve_system_in_time_with_extinction_check
-the GEM loop. For now, stick to the former definitiond 
-without going through the struct for this set of funcs. 
-"""
 
-#function birth_prey(p::ModelParameters, s::InitState)
-#    return max(p.b_max * s.N[1], 0.0)
-#end
-function birth_prey(b::Float64, N::Vector{Number})
+function birth_prey(b::Float64, N::Vector{Int})
     birth = max((b*N[1]),0)
 end
 
-#function death_prey(p::ModelParameters, s::InitState)
-#    death = p.d_min * s.N[1]
-#    pred_death = p.scr * s.N[1] * s.N[2]
-#    return death + pred_death
-#end
-function death_prey(d::Float64, N::Vector{Number}, s::Float64)
+function death_prey(d::Float64, N::Vector{Int}, s::Float64)
     death =  d .* N[1]
     pred_death = s .* N[1] .* N[2]
     pred_death = pred_death[1]
     death = death + pred_death
 end
 
-
-#function birth_pred(p::ModelParameters, s::InitState)
-#    return p.fec * p.scr * s.N[1] * s.N[2]
-#end
-function birth_pred(s::Float64, N::Vector{Number}, f::Float64)
+function birth_pred(s::Float64, N::Vector{Int}, f::Float64)
     birth = f .* s .* N[1] .* N[2]
 end
 
 #function death_pred(p::ModelParameters, s::InitState)
 #    return p.m * s.N[2]
 #end
-function death_pred(m::Float64, N::Vector{Number})
+function death_pred(m::Float64, N::Vector{Int})
     death = m*N[2]
 end
 
-function Event_Terms(param_next::Matrix{Float64}, N::Vector{Number})
+function Event_Terms(param_next::Matrix{Float64}, N::Vector{Int})
     b = param_next[1,1] # max birth
     d = param_next[1,2] # min death
     #b_s = param_next[1,3] # density dependence of birth
@@ -91,11 +70,9 @@ end
 
 
 # ======================================================================
-#           SETUP STRUCTURES
+#                         SETUP STRUCTURES
 # ======================================================================
-# ======================================================================
-#          3.  STRUCTURES
-# ======================================================================
+
 """
     1. InitState
 Initial state struct
@@ -136,8 +113,6 @@ end
 struct SimulationMaps
     state_par_match::Matrix{Int}
     state_geno_match::Matrix{Int}
-    #geno_par_match::Matrix{Int}
-    #which_par_quant::Matrix{Int}
     par_names::Vector{String}
     geno_names::Vector{String}
 end
@@ -146,8 +121,8 @@ end
     5. SimulationParameters
 Our constants for the simulation
 """
-struct SimulationParameters
-    no_species::Int
+struct SimulationParameter
+    no_state::Int
     no_param::Int
     no_columns::Int 
     num_time_steps::Int

@@ -26,6 +26,11 @@ K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
 
 # ======================================================================
 #          2. BIRTH-DEATH FUNCTIONS
+#
+# Note: Symmetric ODE systems can be generalized using linear algebraic matrix notation, 
+# but care must be taken regarding dimensionality of the matrix operations. 
+# If your birth or death function is outputting an array corresponding to multiple states, 
+# then be extra careful while using the output downstream
 # ======================================================================
 """
 Define the birth and death terms for each state below. 
@@ -59,14 +64,14 @@ end
 Initial state struct
 """
 mutable struct InitState
-    N::Vector{Int}
+    N::Vector{Int} # initial state abundances vector
 end
 
 """
     2. ModelParVector
 """
 struct ModelParVector{T}
-    param_init::Vector{T}
+    param_init::Vector{T} # initial parameter vector
 end
 
 """
@@ -75,41 +80,41 @@ Eco-evo choices
 """
 
 struct DesignChoices
-    h2::Array{Float64}
-    cv::Array{Float64}
-    GEM_ver::Vector{String}
+    h2::Array{Float64} # narrow sense heritability
+    cv::Array{Float64} # coefficient of variation
+    GEM_ver::Vector{String} # GEM version
 end
 
 """
     4. SimulationMapping
 """
 struct SimulationMaps
-    state_par_match::Matrix{Int}
-    state_geno_match::Matrix{Int}
-    par_names::Vector{String}
-    geno_names::Vector{String}
+    state_par_match::Matrix{Int} # match parameters to state 
+    state_geno_match::Matrix{Int} # match genotype to state
+    par_names::Vector{String} # parameter names vector 
+    geno_names::Vector{String} # genotype names vector 
 end
 
 """
     5. SimulationParameters
 """
 struct SimulationParameter
-    no_state::Int
-    no_param::Int
-    no_columns::Int 
-    num_time_steps::Int
-    num_rep::Int
-    t_max::Float64
-    min_time_step_to_store::Float64 
+    no_state::Int # total number of states 
+    no_param::Int # total number of parameter 
+    no_columns::Int # total number of columns 
+    num_time_steps::Int # standardized number of time steps 
+    num_rep::Int # number of replication per GEM version 
+    t_max::Float64 # total time to run simulation for 
+    min_time_step_to_store::Float64 # time points to store data at 
 end
 
 """
-    6. GEMOutput
+    6. GEMOutput: storage for all replicates and versions of GEM
 """
 struct GEMOutput
-    pop_stand_out_all::Array{Float64, 4}
-    x_stand_out_all::Array{Float64, 5}
-    x_var_stand_out_all::Array{Float64, 5}
+    pop_stand_out_all::Array{Float64, 4} # population data storage 
+    x_stand_out_all::Array{Float64, 5} # trait median & genotype frequency data storage 
+    x_var_stand_out_all::Array{Float64, 5} # trait variance data storage
 end
 
 

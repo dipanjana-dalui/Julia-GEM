@@ -18,7 +18,7 @@ function Pop_Plot(pop_time::DataFrame, i::Int64)
     draw(pop_plot, axis=(xlabel="time", ylabel="population abundances"))    
 end
 
-
+# =====================================================
 
 function Trait_Plot(mediandf::DataFrame, vardf::DataFrame, 
     spID::Int64, trait_to_plot::String )
@@ -66,6 +66,7 @@ function Trait_Plot(mediandf::DataFrame, vardf::DataFrame,
     return finalplot
 end
 
+# =====================================================
 
 function Geno_Freq_Plot(freqdf::DataFrame, 
                         spID::Int64, 
