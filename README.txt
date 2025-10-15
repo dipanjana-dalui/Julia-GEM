@@ -1,4 +1,28 @@
-Before starting GEMs, please read this document.
+# Julia-GEM 
+Julia - [**G**]illespie [**E**]co-evolutionary [**M**]odel
+
+GEMs represent a significant advancement in eco-evolutionary modeling by integrating the effects of trait variation and fitness into ecological interactions of multiple species without relying on fitness gradient assumptions. With GEMs one can incorporate evolutionary feedback directly into ecological dynamics.
+
+## Coded by
+Julia Version
+- Dipanjana Dalui (ddalui2@unl.edu)
+  
+MATLAB versions (archived elsewhere)
+- John DeLong (jpdelong@unl.edu)
+
+
+
+## Installation
+For now, Julia-GEM is not a package, and you cannot install it on Julia using the package manager.
+However, you may install it as a local package on your system.
+
+
+
+
+VSCode (optional, recommended)
+
+## Quick Start Guide
+#### Prerequisites
 You will need Julia v1.10 or above. We recommend using
 an IDE like VSCode (https://code.visualstudio.com/download)
 
