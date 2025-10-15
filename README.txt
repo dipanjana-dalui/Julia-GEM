@@ -1,5 +1,5 @@
-# Julia-GEM 
-Julia - [**G**]illespie [**E**]co-evolutionary [**M**]odel
+J-GEM (Julia version)
+[**J**]ulia - [**G**]illespie [**E**]co-evolutionary [**M**]odel
 
 GEMs represent a significant advancement in eco-evolutionary modeling by integrating the effects of trait variation and fitness into ecological interactions of multiple species without relying on fitness gradient assumptions. With GEMs one can incorporate evolutionary feedback directly into ecological dynamics.
 
@@ -10,43 +10,31 @@ Julia Version
 MATLAB versions (archived elsewhere)
 - John DeLong (jpdelong@unl.edu)
 
-
-
 ## Installation
-For now, Julia-GEM is not a package, and you cannot install it on Julia using the package manager.
-However, you may install it as a local package on your system.
+For now, J-GEM is not a package, and you cannot install it on Julia using Pkg.add.
+You will have to either clone, fork or download all the scripts from the GitHub account. 
 
-
-
+#### Prerequisites
+Julia v1.1x 
 
 VSCode (optional, recommended)
 
+## Documentation
+An quick reference user guide can be found [here](https://docs.google.com/document/d/1ei0qyVbipbbEpGSSgWxtgIu7WO41jif7Dmy_n1E6_lM/edit?tab=t.0). 
+
+
+## Citation
+TBA
+
+## License
+TBA
+
 ## Quick Start Guide
-#### Prerequisites
-You will need Julia v1.10 or above. We recommend using
-an IDE like VSCode (https://code.visualstudio.com/download)
+Clone the repository to your local machine.
+To set up any GEM analysis, you will be interacting with 2 files:
+1. **_xx_setup.jl_** ->  This file will walk you through the various blocks that you will configure for your own analysis.  
+2. **_xx_bdTerms.jl_** -> a script of functions for the birth and deaths of each state. This is your book-keeping function, arguably the most important part of the algorithm setup. For births, you will take into account all processes that are leading to an increase in the state's abundance. Similarly, for death, make sure you account for all processes that can lead to individuals leaving the state. 
+The prefix **_xx_** indicates the example case. 
 
-1. All scripts are saved under src directory.
-
-2. All major function scripts are inside directory src/function.
-
-3. After setting your environment, run install_pkgs.jl the first time to install all needed packages. Subsequently, load all packages  simultaneously for use in the GEM-run file with the include() command.
-
-4. All defintion and config files are prefixed with the model name
-    bdLM: birth-death Logistoc model
-    2spp: 2 species prey predator model
-Make sure to load the correct defintion file with the correct config file.
-
-5. New function names should be added to the GEM_function.jl scipt for repeated use or 
-included  manually in the GEM_run file.
-
-6. If loading as a local package, you only need the scripts under src/function. 
-However, you will still need to use the same defition and config formats. 
-
-7. Multithreading: set required number of threads BEFORE launching Julia. 
-Easiest way to set threads to n (under Files for Windows, under Code for MACOS)
-                    Settings > 
-                    search "julia threads" > 
-                    Julia:Num Threads > 
-                    Edit in settings.json > 
-                    "julia.NumThreads": n
+## Questions/Comments
+- email ddalui2@unl.edu or jpdelong@unl.edu
