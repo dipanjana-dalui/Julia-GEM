@@ -83,9 +83,9 @@ num_time_steps = length(stand_time)
 
 
 # 
-pop_stand_out_all = fill(NaN, no_species, num_time_steps, num_rep, length(GEM_ver))
-x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
-x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
+pop_stand_out_all = fill(NaN, no_state, num_time_steps, num_rep, length(GEM_ver))
+x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
+x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
 
 
 # ======================================================================

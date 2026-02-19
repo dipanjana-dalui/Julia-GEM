@@ -46,9 +46,9 @@ function InitiatePop(N0::Vector{Int},
 			for yy = 1:y0[qq]
 				temp2 = rand(1:num_gts) 
 				genotype[yy, temp2] = 1
-			end			
-		end
-		init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 2 + length(params):1+length(params)+num_gts] = genotype
+			end
+			init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 2 + length(params):1+length(params)+num_gts] = genotype			
+		end		
 		
 	end
 	return init_comm_mat

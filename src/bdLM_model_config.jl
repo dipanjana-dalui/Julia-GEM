@@ -64,9 +64,9 @@ no_columns = no_param + 1 + size(state_geno_match, 2) # do not edit
 
 # ===================================================================
 # simulation design choices
-GEM_ver = ["ver1", "ver2", "ver3"] # number of GEM versions
+GEM_ver = ["ver1", "ver2", "ver3", "ver4"] # number of GEM versions
 # nrow: state; ncol  = GEM ver
-h2 = [ 0.0 0.2 0.3 ] # narrow sense heritability
+h2 = [ 0.0 0.2 0.2 0.2 ] # narrow sense heritability
 # cv = array{state ID, length(param), GEM ver}
 """
 Note: The first stack is for GEM ver 1; typically reserved for "no-evolution". All elements are set to 0.0
@@ -75,9 +75,11 @@ You can mirror the dimensions of state_parameter_match matrix defined above.
 1 -> cv value
 0 -> n/a for this state
 """
-cv = cat([ 0.0 0.0 0.0 0.0],
-         [ 0.3 0.1 0.0 0.0],
-         [ 0.2 0.2 0.2 0.2], dims=3)
+cv = cat([ 0.0 0.0 0.0 0.0], #ver 1
+         [ 0.2 0.0 0.0 0.0], #ver 2
+         [ 0.0 0.2 0.0 0.0], #ver 3
+         [ 0.2 0.2 0.0 0.0], #ver 4
+           dims=3) 
 
 # =================================================================== 
 
