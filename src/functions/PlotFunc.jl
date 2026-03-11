@@ -1,25 +1,3 @@
-# ========================================== #
-#		        PLOT FUNCtions               #
-# ========================================== #
-
-#=function Pop_Plot(pop_time::DataFrame, i::Int64)
-    pop_time = pop_time[pop_time.state_ID .== i, :]
-    rep_col_name = names(pop_time)[4:size(pop_time)[2]]
-    pop_stack = stack(pop_time, 
-                    rep_col_name)
-    pop_plot = data(pop_stack) * mapping(
-        :time,
-        :value,
-        #color = :replicate,
-        group = :variable,
-        row = :GEM_ver => nonnumeric 
-        ) *
-        visual(Lines, color = :grey)
-    draw(pop_plot, axis=(xlabel="time", ylabel="population abundances"))    
-end
-=#
-
-# =====================================================
 
 function Trait_Plot(; mediandf::DataFrame, vardf::DataFrame, 
     stateID::Int64, trait_to_plot::String, add_mean::Bool)
@@ -119,12 +97,13 @@ function Geno_Freq_Plot(; freqdf::DataFrame,
 end
 
 #====================================================# 
-function Pop_Plot(; pop_data::DataFrame, stateID::Int64, add_mean::Bool)
+function Pop_Plot(;pop_data::DataFrame, stateID::Int64, add_mean::Bool)
     pop_time = pop_data[pop_data.state_ID .== stateID, :]
     rep_col_name = names(pop_time)[4:size(pop_time)[2]]
     pop_stack = stack(pop_time, 
                     rep_col_name)
-    if add_mean 
+
+    if add_mean  
         # Calculate average and standard deviation across replicates
         pop_time.mean = mean.(eachrow(pop_time[:, rep_col_name]))
         pop_time.std = std.(eachrow(pop_time[:, rep_col_name]))

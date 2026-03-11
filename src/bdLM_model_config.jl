@@ -84,9 +84,9 @@ cv = cat([ 0.0 0.0 0.0 0.0], #ver 1
 # =================================================================== 
 
 # replicate and time
-num_rep = 5 # number of replicates
-t_max = 50.0 # maximum time 
-min_time_step_to_store = 0.5 # time points when data is stored
+num_rep = 2 # number of replicates
+t_max = 7.0 # maximum time 
+min_time_step_to_store = 0.1 # time points when data is stored
 stand_time = range(0, t_max, step = min_time_step_to_store) # standadized number of time points across all runs (do not edit)
 stand_time = collect(stand_time) # do not edit
 num_time_steps = length(stand_time) # do not edit

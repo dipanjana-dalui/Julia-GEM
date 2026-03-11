@@ -3,15 +3,38 @@
 # ========================================== #
 
 function PickEvent(terms::Vector{Float64}, no_state::Int)
+	
+	terms = reshape(terms, 1, length(terms)) #reshape(ele_to_reshape, new_row, new_col)
+	terms = transpose(reshape(terms, 2, no_state ))
+    
+	temp = hcat(1:no_state,terms) # in this temp struc, first col is N, col2 = birth; col3 = death
+	state_ids = temp[:, 1]
+	rates = temp[:, 2:end]
 
-    terms = reshape(terms, 1, length(terms)) #reshape(ele_to_reshape, new_row, new_col)
+	nz_rate_pos = findall(rates .!= 0) 
+	nz_rate_vals = rates[nz_rate_pos] 
+	c_sum = cumsum(nz_rate_vals)  
+	pie_slices = c_sum ./ c_sum[end] #generated weighted slices b/w 0-1
+	r_num = rand()
+
+	less_than = r_num .< pie_slices  #BitMatrix
+	event_index = findfirst(==(1), less_than)
+
+	picked_event = nz_rate_pos[event_index]
+	#col 1 = birth, col 2 = death
+	row = picked_event[1]  
+	col = picked_event[2] 
+	return (c_sum = c_sum, event=col, state=row)
+	
+
+end
+
+
+#=
 	c_sum = cumsum(terms, dims=2)  
 	pie_slices = c_sum ./ c_sum[end] #generated weighted slices b/w 0-1
 	r_num = rand()
 	
-	less_than = r_num .< pie_slices  #BitMatrix
-	less_than = collect(less_than)  #Matrix{Bool}
-	event_mat = reshape(less_than, :, no_state) #reshaped Matrix{Bool}
 	
 	row = -1
 	col = -1
@@ -23,10 +46,4 @@ function PickEvent(terms::Vector{Float64}, no_state::Int)
 			break
 		end
 	end
-
-	return (c_sum = c_sum, row=row, col=col)
-	
-
-end
-
-
+=#

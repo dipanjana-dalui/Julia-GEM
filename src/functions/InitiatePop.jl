@@ -14,6 +14,8 @@ function InitiatePop(N0::Vector{Int},
     state_par_match = zero_to_nan(state_par_match)
     state_geno_match = zero_to_nan(state_geno_match)
 
+
+
 	y0 = N0
 	end_row = cumsum(y0)
 	starting_row = [1; 1 .+ end_row[1:length(end_row)-1]]
@@ -46,9 +48,9 @@ function InitiatePop(N0::Vector{Int},
 			for yy = 1:y0[qq]
 				temp2 = rand(1:num_gts) 
 				genotype[yy, temp2] = 1
-			end
-			init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 2 + length(params):1+length(params)+num_gts] = genotype			
-		end		
+			end	
+			init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 2 + length(params):1+length(params)+num_gts] = genotype
+		end
 		
 	end
 	return init_comm_mat

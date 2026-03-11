@@ -10,10 +10,12 @@ include("functions/Packages.jl")
 
 # load model definition  
 include("bdLM_model_definition.jl") 
+
 #include("2spp_model_definition.jl") # 2 state example model definition file
 
 # load model configuration
 include("bdLM_model_config.jl")
+
 #include("2spp_model_config.jl") # 2 state example model configuration file 
 
 # load all functions 

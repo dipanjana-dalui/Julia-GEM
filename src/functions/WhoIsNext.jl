@@ -4,7 +4,7 @@
 # ========================================== #
 
 function WhoIsNext(x_dist::Matrix{Float64}, no_state::Int64, no_columns::Int64, no_param::Int64, 
-	N0::Vector{Int}, state_par_match::Matrix{Int64}, state_geno_match::Matrix{Int64})
+	N::Vector{Int}, state_par_match::Matrix{Int64}, state_geno_match::Matrix{Int64})
 
 	# matrix conversions
 	state_par_match = zero_to_nan(state_par_match)
@@ -13,9 +13,12 @@ function WhoIsNext(x_dist::Matrix{Float64}, no_state::Int64, no_columns::Int64, 
 	# storage 
 	param_next = fill(NaN,no_state, no_param)
 	genotype_next = fill(NaN, no_state, size(state_geno_match, 2))
-	whosnext = fill(NaN,length(N0)) 
+	#whosnext = fill(NaN,no_state) 
+	whosnext = zeros(Int, no_state) # initialize as Int - type consistent
 
-	for zz = 1:no_state # loop through state 
+	extant_states = findall(N .!= 0)
+	for zz in extant_states
+	#for zz = 1:no_state # loop through state 
 		ind_in_state = findall(x_dist[:,1] .== zz) # this finds the index for the zzth state
 		which_params = findall(.!isnan.(state_par_match[zz, :])) # finding the indices of the non NaN elements	
 		which_genotype = 1:size(state_geno_match, 2) #1:ncol of genotypes 
