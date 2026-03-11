@@ -47,6 +47,7 @@ par_names = ["b_max", "d_min", "scr", "fec", "m"]
 no_state = length(N_init) 
 no_param = length(param_vect) 
 
+constant_vect = [] #, K]
 # Define the mapping arrays
 # nrow = state, ncol = param
 state_par_match = [1 1 0 0 0; 0 0 1 1 1]

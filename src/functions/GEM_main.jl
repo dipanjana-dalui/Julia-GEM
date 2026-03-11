@@ -1,7 +1,6 @@
 """
     1. Function to run one replication 
 """
-
 function run_replicate(init_state::InitState,
                         mod_par_vect::ModelParVector,
                         gem_constants::GEMConstant,
@@ -184,21 +183,15 @@ function GEM_sim(init_state::InitState,
         x_stand = fill(NaN, no_columns - 1, num_time_steps, no_state, num_rep)
         x_var_stand = fill(NaN, no_columns - 1, num_time_steps, no_state, num_rep)
         
-        rep_good = fill(false, num_rep)
         Threads.@threads for i = 1:num_rep # loop through the replicates
-            @show Threads.threadid()  
-            try          
-            results = run_replicate(init_state, mod_par_vect, gem_constants, dc, sim_map, 
+            #@show j
+            #@show i
+            @show Threads.threadid()            
+            pop_slice, x_slice, x_var_slice = run_replicate(init_state, mod_par_vect, gem_constants, dc, sim_map, 
                 sim_par,j, verbose)
-            pop_slice = results.pop_time_series
-            x_slice = results.trait_mom1
-            x_var_slice = results.trait_mom2
             pop_stand[:, :, i] .= pop_slice
             x_stand[:, :, :, i] .= x_slice
             x_var_stand[:, :, :, i] .= x_var_slice
-            catch e
-                println("Error in replicate $i: $e on thread $(Threads.threadid())")
-            end
         end
         
         pop_stand_out_all[:, :, :, j] .= pop_stand
@@ -207,8 +200,8 @@ function GEM_sim(init_state::InitState,
     end
     
     # turn the multidimensional output arrays into long dataframes
-    pop_out = make_pop_df_long(sim_op, sim_par, dc) # population time series dataframe
-    trait_out = make_trait_df_long(sim_op, sim_par, dc, sim_map) # trait mean and var time seroes dataframes 
+    pop_out = make_pop_df_long(sim_output, sim_params, design_choices) # population time series dataframe
+    trait_out = make_trait_df_long(sim_output, sim_params, design_choices, mappings) # trait mean and var time seroes dataframes 
     # trait_out has two dataframes that can be accessed with named tuples: trait_out.mean and trait_out.var 
 
     return (pop_df = pop_out, trait_df = trait_out)
@@ -216,3 +209,48 @@ end
 
 #===================================================================#
 
+ 
+function Trait_Plot(; mediandf::DataFrame, vardf::DataFrame, 
+    stateID::Int64, trait_to_plot::String)
+
+    #pick the right GEM version number and state ID
+    mediandf = mediandf[mediandf.state_ID .== stateID, :]
+    vardf = vardf[vardf.state_ID .== stateID, :]
+    #pick the trait wanted
+    mediantemp = mediandf[:, [:time, :rep, :GEM_ver]]
+    mediantemp2 = mediandf[:,trait_to_plot]
+    median2plot = hcat(mediantemp, mediantemp2)
+
+    #grab the right var
+    vartemp2 = vardf[:,trait_to_plot]
+    
+    dftemp = hcat(median2plot, vartemp2, makeunique=true)
+    rename!(dftemp, :x1 => :median, :x1_1 => :var)
+
+    upper_bound = dftemp.median .+ dftemp.var
+    lower_bound = dftemp.median .- dftemp.var
+    df2plot = hcat(dftemp, upper_bound, lower_bound, makeunique = true)
+    rename!(df2plot,:x1 => :upper_bound, :x1_1 => :lower_bound )
+
+    median_plot = data(df2plot) * mapping(
+        :time,
+        :median,
+        #color = :rep,
+        group = :rep => nonnumeric,
+        row = :GEM_ver => nonnumeric
+    ) *
+        visual(Lines, color = :grey)
+
+    var_plot = data(df2plot) * mapping(
+        :time,
+        :upper_bound,
+        :lower_bound,
+        group = :rep => nonnumeric,
+        row = :GEM_ver => nonnumeric
+    )    * visual(Band, color = :lightgrey, alpha=0.5)
+
+    tempplot = data(df2plot) * (median_plot + var_plot)
+    finalplot = draw(tempplot, axis=(xlabel="time", ylabel="median trait value"))
+
+    return finalplot
+end
