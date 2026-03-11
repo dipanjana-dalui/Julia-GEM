@@ -9,30 +9,34 @@ Before you start, please read README.txt
 include("functions/Packages.jl")
 
 # load model definition  
-include("bdLM_model_definition.jl") 
+#include("bdLM_model_definition.jl") 
 
-#include("2spp_model_definition.jl") # 2 state example model definition file
+include("2spp_model_definition.jl") 
+
+#include("RF_model_def_nointerf.jl") 
 
 # load model configuration
-include("bdLM_model_config.jl")
-
-#include("2spp_model_config.jl") # 2 state example model configuration file 
+include("2spp_model_config.jl")
 
 # load all functions 
 include("functions/GEM_Functions.jl")
 
 # run the GEM simulation
-
+using Dates
+start_t = now()
 
 run_sim = GEM_sim(
                   N0, # initial state
                   model_par_vect, # model parameters in a vector
+                  gem_const_vect,
                   design_choices, # evolution decisions
                   mappings, # parameter-to-state mapping
                   sim_params,# simulation parameters
                   sim_output, # output containers
-                  verbose=false # show time on console
+                  verbose=true # show time on console
                   ) #
+
+end_t = now()
 
 
 
@@ -42,25 +46,35 @@ run_sim = GEM_sim(
 
 # dataframe for population time series
 pop_dat = run_sim.pop_df
-CSV.write("pop_time_series.csv", pop_dat)
+
 # 2 dataframes: mean and variance
 trait_dat = run_sim.trait_df
 
 # accessing the two trait dataframes
 # trait mean dataframe:
 trait_dat.median 
-CSV.write("trait_mean_time_series.csv", trait_dat.median)
 
-# trait variance dataframeß
+# trait variance dataframe
 trait_dat.var
-CSV.write("trait_var_time_series.csv", trait_dat.var)
-# =====================================================
+
 # Pop_Plot(pop data, stateID)
-Pop_Plot(pop_data = pop_dat, stateID = 1, add_mean=true)
+p = Pop_Plot(pop_data=run_sim.pop_df, stateID= 1, add_mean=true)
+
+````
+stateID = 1,2,3,4
+S, A, J, G 
+```
 
 # Trait_Plot(mean, var, stateID, "trait name")
-Trait_Plot(mediandf = trait_dat.median, vardf = trait_dat.var, 
-           stateID = 1, trait_to_plot = "d_min", add_mean=true)
+Trait_Plot(mediandf=trait_dat.median, vardf=trait_dat.var, 
+stateID=1, trait_to_plot="b_max", add_mean=false)
+
 
 # Geno_Plot(mean, stateID, "trait name")
-Geno_Freq_Plot(freqdf=trait_dat.median, stateID=1, geno_names="g_1")
+Geno_Freq_Plot(trait_dat.median, 4, "g_1")
+
+```
+- check density dependence forms
+- run ODE for model with interference 
+ 
+```

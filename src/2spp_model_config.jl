@@ -11,7 +11,7 @@ Random.seed!(42)
 #                    INITIAL STATE AND PARAMETERS
 # ======================================================================
 # initial states [prey, predator]
-N_init = [5, 1]
+N_init = [50, 20]
 # prey birth 
 b_max_mu = 0.8
 b_max_sigma = 0.0
@@ -56,10 +56,15 @@ state_geno_match = [1 0 0 0; 0 0 1 0] # startng genotype
 no_columns = no_param + 1 + size(state_geno_match, 2) 
 geno_names = ["g_1", "g_2", "g_3", "g_4"]
 
-GEM_ver = ["ver1", "ver2"]
+GEM_ver = ["ver1"]#, "ver2"]
 # nrow: state ID, ncol: GEM versions
-h2 = [ 0.0 0.2 ;
-       0.0 0.2 ]# narrow sense heritability
+
+h2 = [ 0.0 ;
+       0.0 ]# narrow sense heritability
+
+
+#h2 = [ 0.0 0.2 ;
+#       0.0 0.2 ]# narrow sense heritability
 
 # cv = nrow:state ID, ncol:length(param), stack:GEM ver}
 """
@@ -70,12 +75,13 @@ You can mirror the dimensions of state_parameter_match matrix defined above.
 0 -> n/a for this state
 """
 
-cv = cat([ 0.0 0.0 0.0 0.0 0.0 ; 0.0 0.0 0.0 0.0 0.0],
-         [ 0.3 0.1 0.0 0.0 0.0 ; 0.0 0.0 0.1 0.1 0.05], dims=3)
+cv = cat([ 0.1 0.1 0.0 0.0 0.0 ; 0.0 0.0 0.1 0.1 0.1],
+         #[ 0.3 0.1 0.0 0.0 0.0 ; 0.0 0.0 0.1 0.1 0.05], 
+         dims=3)
 
 
-num_rep = 2
-t_max = 5.0 #upwards of 6 the events times get very very small
+num_rep = 3
+t_max = 10.0 #upwards of 6 the events times get very very small
 min_time_step_to_store = 0.5
 stand_time = range(0, t_max, step = min_time_step_to_store)
 stand_time = collect(stand_time)
@@ -136,4 +142,7 @@ sim_output = GEMOutput(
     )
     
 
-    
+""" 7. Instantiate Constants """
+gem_const_vect = GEMConstant(
+   constant_vect
+   ) 

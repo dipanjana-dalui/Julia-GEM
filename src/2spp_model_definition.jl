@@ -51,7 +51,7 @@ function death_pred(m::Float64, N::Vector{Int})
     death = m*N[2]
 end
 
-function Event_Terms(param_next::Matrix{Float64}, N::Vector{Int})
+function Event_Terms(param_next::Matrix{Float64}, const_vect::Any, N::Vector{Int})
     b = param_next[1,1] # max birth
     d = param_next[1,2] # min death
     #b_s = param_next[1,3] # density dependence of birth
@@ -140,3 +140,9 @@ struct GEMOutput
     x_var_stand_out_all::Array{Float64, 5}
 end
 
+"""
+7. CONSTANTS
+"""
+struct GEMConstant{T} 
+    const_vect::Vector{T}
+end
