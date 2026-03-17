@@ -68,12 +68,15 @@ function run_replicate(init_state::InitState,
         param_next = FindWhoNext.param_next # FindWhoNext[1]; Using named tuple for cleaner access
         genotype_next = FindWhoNext.genotype_next # FindWhoNext[2]
         whosnext = FindWhoNext.whosnext # FindWhoNext[3]
-       # @show param_next
-       # @show whosnext
+        #@show param_next
+        #@show whosnext
+
+        @show N
+        @show sum(N)
 
         """ Func Event Terms """
         terms = collect(Event_Terms(param_next, const_vect, N))
-       # @show terms
+        @show terms
 
         """ Func Pick Event """
         picked_event = PickEvent(terms, no_state)
@@ -123,8 +126,10 @@ function run_replicate(init_state::InitState,
         if !isnan(time_advance) && time_advance > 0 
             t = t + time_advance
         else
-            println("Time advance error. Check cumulative 
-            sum. Stopped at time:\nT $t")
+            println("Time advance error. 
+            Check cumulative sum. 
+            Likely only one event possible, tau effectively 0. 
+            Simularion stopped at time:\nT $t")
             #@show N
             break
         end 
@@ -149,7 +154,7 @@ function run_replicate(init_state::InitState,
     end 
 
         # Return the results for this replicate
-    return (pop_time_series=pop_slice, trait_mom1 = x_slice, trait_mom2 = x_var_slice)
+    return (pop_time_series=pop_slice, trait_mom1 = x_slice, trait_mom2 = x_var_slice, last_index_t = time_step_index-1)
 end
 
 # ==================================================================
@@ -187,11 +192,16 @@ function GEM_sim(init_state::InitState,
             #@show j
             #@show i
             @show Threads.threadid()            
-            pop_slice, x_slice, x_var_slice = run_replicate(init_state, mod_par_vect, gem_constants, dc, sim_map, 
+            results = run_replicate(init_state, mod_par_vect, gem_constants, dc, sim_map, 
                 sim_par,j, verbose)
-            pop_stand[:, :, i] .= pop_slice
-            x_stand[:, :, :, i] .= x_slice
-            x_var_stand[:, :, :, i] .= x_var_slice
+            #pop_slice = results.pop_time_series
+            #x_slice = results.trait_mom1
+            #x_var_slice = results.trait_mom2
+
+            last_t = results.last_index_t
+            pop_stand[:, 1:last_t, i] .= results.pop_time_series[:, 1:last_t]
+            x_stand[:, 1:last_t, :, i] .= results.trait_mom1[:, 1:last_t, :]
+            x_var_stand[:, 1:last_t, :, i] .= results.trait_mom2[:, 1:last_t, :]
         end
         
         pop_stand_out_all[:, :, :, j] .= pop_stand
