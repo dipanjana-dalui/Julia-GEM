@@ -71,12 +71,12 @@ function run_replicate(init_state::InitState,
         #@show param_next
         #@show whosnext
 
-        @show N
-        @show sum(N)
+        
+        #@show sum(N)
 
         """ Func Event Terms """
         terms = collect(Event_Terms(param_next, const_vect, N))
-        @show terms
+        #@show terms
 
         """ Func Pick Event """
         picked_event = PickEvent(terms, no_state)
@@ -136,6 +136,7 @@ function run_replicate(init_state::InitState,
      
         if verbose 
             @show t
+            @show N
         end
         
     end    
@@ -143,6 +144,7 @@ function run_replicate(init_state::InitState,
 
     if t > t_max
         println("Simulation reached t_max. Stopped at time:\nT $t")
+
         # store the last value of the replicate
          pop_slice[:,time_step_index] .= N  # assign current values to sliced standard times
            
@@ -154,7 +156,8 @@ function run_replicate(init_state::InitState,
     end 
 
         # Return the results for this replicate
-    return (pop_time_series=pop_slice, trait_mom1 = x_slice, trait_mom2 = x_var_slice, last_index_t = time_step_index-1)
+    return (pop_time_series=pop_slice, trait_mom1 = x_slice, trait_mom2 = x_var_slice, 
+            last_index_t = time_step_index-1, last_point = time_step_index)
 end
 
 # ==================================================================
@@ -202,6 +205,12 @@ function GEM_sim(init_state::InitState,
             pop_stand[:, 1:last_t, i] .= results.pop_time_series[:, 1:last_t]
             x_stand[:, 1:last_t, :, i] .= results.trait_mom1[:, 1:last_t, :]
             x_var_stand[:, 1:last_t, :, i] .= results.trait_mom2[:, 1:last_t, :]
+
+            last_pt = results.last_point
+            pop_stand[:, last_pt, i] .= results.pop_time_series[:, last_pt]
+            x_stand[:, last_pt, :, i] .= results.trait_mom1[:, last_pt, :]
+            x_var_stand[:, last_pt, :, i] .= results.trait_mom2[:, last_pt, :]
+
         end
         
         pop_stand_out_all[:, :, :, j] .= pop_stand
