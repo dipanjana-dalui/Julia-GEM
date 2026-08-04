@@ -2,7 +2,7 @@
 #		  FUNCTION DRAW NEW TRAITS           #
 # ========================================== #
 
-function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64}, 
+function draw_new_trait(x_dist::Matrix{Float64}, parent_traits::Vector{Float64}, 
 						h2::Array{Float64}, no_param::Int64, no_columns::Int64, col::Int64, j::Int64)
 
 

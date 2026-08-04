@@ -3,7 +3,7 @@
 #			FUNCTION WHO IS NEXT?	         #
 # ========================================== #
 
-function WhoIsNext(x_dist::Matrix{Float64}, no_state::Int64, no_columns::Int64, no_param::Int64, 
+function who_is_next(x_dist::Matrix{Float64}, no_state::Int64, no_columns::Int64, no_param::Int64, 
 	N::Vector{Int}, state_par_match::Matrix{Int64}, state_geno_match::Matrix{Int64})
 
 	# matrix conversions

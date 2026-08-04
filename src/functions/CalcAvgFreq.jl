@@ -3,7 +3,7 @@
 #		FUNCTION CALC AVG FREQUENCIES        #
 # ========================================== #
 
-function CalcMedian(ii::Int, no_columns::Int, no_param::Int, x_dist::Matrix{Float64})
+function calc_median(ii::Int, no_columns::Int, no_param::Int, x_dist::Matrix{Float64})
     if !isempty(x_dist) && count(x_dist[:, 1] .== ii) > 0 
 		# get the rows for the state of interest
 		qt_medians = mapslices(median ∘ skipmissing, x_dist[x_dist[:, 1] .== ii, 2:no_param+1], dims=1)
@@ -16,7 +16,7 @@ function CalcMedian(ii::Int, no_columns::Int, no_param::Int, x_dist::Matrix{Floa
 	end
 end
 
-function CalcMean(ii::Int, no_columns::Int, no_param::Int, x_dist::Matrix{Float64})
+function calc_mean(ii::Int, no_columns::Int, no_param::Int, x_dist::Matrix{Float64})
 	if !isempty(x_dist) && count(x_dist[:, 1] .== ii) > 0
 		# Step 1: Quantitative trait medians (ignoring NaN values)
 		qt_means = mapslices(mean ∘ skipmissing, x_dist[x_dist[:, 1] .== ii, 2:no_param+1], dims=1)
@@ -32,7 +32,7 @@ function CalcMean(ii::Int, no_columns::Int, no_param::Int, x_dist::Matrix{Float6
 	end
 end
 
-function CalcVar(ii::Int, no_param::Int, x_dist::Matrix{Float64})
+function calc_var(ii::Int, no_param::Int, x_dist::Matrix{Float64})
 
 	temp_size = size(x_dist[x_dist[:,1] .== ii,2:no_param+1])
 	if temp_size[1] == 1 #has only one row = only one individual

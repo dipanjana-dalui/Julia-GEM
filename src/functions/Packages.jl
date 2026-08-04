@@ -2,17 +2,19 @@
 A list of all packages 
 """
 
+using AlgebraOfGraphics
+using BenchmarkTools
+using CairoMakie 
+using CSV
+using Dates
 using DifferentialEquations
-using Plots
 using Distributions
 using DataFrames
+using Makie
+using Plots
 using Random
 using Statistics
 using StaticArrays
 using StatsBase
-using AlgebraOfGraphics
-using CSV
-using Makie
-using CairoMakie 
 using Tidier
 using UnPack

@@ -33,7 +33,7 @@ function run_replicate(init_state::InitState,
     pop_slice[:,1] .= N0 #first col/time step gets the initial pop 
     
     """ Func Initiate Population """
-    x_dist_init = InitiatePop(
+    x_dist_init = initiate_pop(
         N0, 
         state_geno_match, 
         state_par_match, 
@@ -47,8 +47,8 @@ function run_replicate(init_state::InitState,
     extant_states = findall(N0 .!= 0)
     for ii in extant_states
         #(no_state)
-        x_slice[:, 1, ii] = CalcMedian(ii, no_columns, no_param, x_dist_init)
-        x_var_slice[1:no_param, 1, ii] = CalcVar(ii, no_param, x_dist_init)
+        x_slice[:, 1, ii] = calc_median(ii, no_columns, no_param, x_dist_init)
+        x_var_slice[1:no_param, 1, ii] = calc_var(ii, no_param, x_dist_init)
     end
     
 
@@ -64,7 +64,7 @@ function run_replicate(init_state::InitState,
     
     while t < t_max && sum(N) > 0
         """ Func WhoIsNext """
-        FindWhoNext = WhoIsNext(x_dist, no_state, no_columns, no_param, N, state_par_match, state_geno_match)
+        FindWhoNext = who_is_next(x_dist, no_state, no_columns, no_param, N, state_par_match, state_geno_match)
         param_next = FindWhoNext.param_next # FindWhoNext[1]; Using named tuple for cleaner access
         genotype_next = FindWhoNext.genotype_next # FindWhoNext[2]
         whosnext = FindWhoNext.whosnext # FindWhoNext[3]
@@ -75,11 +75,11 @@ function run_replicate(init_state::InitState,
         #@show sum(N)
 
         """ Func Event Terms """
-        terms = collect(Event_Terms(param_next, const_vect, N))
+        terms = collect(event_terms(param_next, const_vect, N))
         #@show terms
 
         """ Func Pick Event """
-        picked_event = PickEvent(terms, no_state)
+        picked_event = pick_event(terms, no_state)
         c_sum = picked_event.c_sum # PickedEvent[1]
         event = picked_event.event # 1: birth, 2: death
         state = picked_event.state # state
@@ -89,7 +89,7 @@ function run_replicate(init_state::InitState,
             parent_traits = x_dist[Int(whosnext[state]), 2:no_columns] 
             #@show parent_traits   
                  """ Draw New Trait """     
-            new_trait = DrawNewTraits(x_dist,parent_traits,h2,no_param,no_columns,state, j)
+            new_trait = draw_new_trait(x_dist,parent_traits,h2,no_param,no_columns,state, j)
                    
             new_trait_row = hcat(state, new_trait)
             new_trait_row = hcat(new_trait_row[1],new_trait_row[2][1],new_trait_row[2][2])
@@ -112,8 +112,8 @@ function run_replicate(init_state::InitState,
             
             extant_states = findall(N .!= 0)
             for ii in extant_states
-                x_slice[:,time_step_index,ii] = CalcMedian(ii,no_columns,no_param,x_dist)
-                x_var_slice[1:no_param,time_step_index,ii] = CalcVar(ii, no_param, x_dist)
+                x_slice[:,time_step_index,ii] = calc_median(ii,no_columns,no_param,x_dist)
+                x_var_slice[1:no_param,time_step_index,ii] = calc_var(ii, no_param, x_dist)
             end
 
             time_step_index +=  1 # advance to next standardized time
@@ -129,7 +129,7 @@ function run_replicate(init_state::InitState,
             println("Time advance error. 
             Check cumulative sum. 
             Likely only one event possible, tau effectively 0. 
-            Simularion stopped at time:\nT $t")
+            Simulation stopped at time:\nT $t")
             #@show N
             break
         end 
@@ -150,8 +150,8 @@ function run_replicate(init_state::InitState,
            
             extant_states = findall(N .!= 0)
             for ii in extant_states
-                x_slice[:,time_step_index,ii] = CalcMedian(ii,no_columns,no_param,x_dist)
-                x_var_slice[1:no_param,time_step_index,ii] = CalcVar(ii, no_param, x_dist)
+                x_slice[:,time_step_index,ii] = calc_median(ii,no_columns,no_param,x_dist)
+                x_var_slice[1:no_param,time_step_index,ii] = calc_var(ii, no_param, x_dist)
             end
     end 
 
@@ -172,9 +172,10 @@ function GEM_sim(init_state::InitState,
                         dc::DesignChoices,
                         sim_map::SimulationMaps,
                         sim_par::SimulationParameter,
-                        sim_op::GEMOutput;
+                        sim_op::GEMOutput; 
                         verbose::Bool)
     
+                       
     @unpack N = init_state
     @unpack param_init = mod_par_vect
     @unpack const_vect = gem_constants
@@ -183,6 +184,10 @@ function GEM_sim(init_state::InitState,
     @unpack state_geno_match, state_par_match = sim_map
     @unpack num_rep, t_max, no_state, no_columns, no_param, num_time_steps,min_time_step_to_store  = sim_par    
     @unpack pop_stand_out_all, x_stand_out_all, x_var_stand_out_all = sim_op
+    
+   # pop_stand_out_all = fill(NaN, no_state, num_time_steps, num_rep, length(GEM_ver))
+   # x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
+   # x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
     
     for j = 1:length(GEM_ver) # loop through the GEM versions
 
@@ -219,8 +224,11 @@ function GEM_sim(init_state::InitState,
     end
     
     # turn the multidimensional output arrays into long dataframes
-    pop_out = make_pop_df_long(sim_output, sim_params, design_choices) # population time series dataframe
-    trait_out = make_trait_df_long(sim_output, sim_params, design_choices, mappings) # trait mean and var time seroes dataframes 
+    pop_out = make_pop_df_long(sim_op, sim_par, dc) # population time series dataframe
+    trait_out = make_trait_df_long(sim_op, sim_par, dc, sim_map) # trait mean and var time seroes dataframes 
+    #pop_out = make_pop_df_long(pop_stand_out_all, sim_par, dc)
+    #trait_out = make_trait_df_long((pop=pop_stand_out_all, trait_mean=x_stand_out_all, trait_var=x_var_stand_out_all), sim_par, dc, sim_map)
+    
     # trait_out has two dataframes that can be accessed with named tuples: trait_out.mean and trait_out.var 
 
     return (pop_df = pop_out, trait_df = trait_out)

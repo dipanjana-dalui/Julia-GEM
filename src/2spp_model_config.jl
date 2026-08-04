@@ -31,13 +31,13 @@ m_sigma = 0.0
 # randomly draw one sample from the lognormal distrinution
 # (see PickTrait.jl for MU and SIGMA transformations )
 
-b_max = PickTrait(b_max_mu, b_max_sigma)  # max birth
-d_min = PickTrait(d_min_mu, d_min_sigma) # min death
+b_max = pick_trait(b_max_mu, b_max_sigma)  # max birth
+d_min = pick_trait(d_min_mu, d_min_sigma) # min death
 #b_s = rand(LogNormal(log(b_s_mu), b_s_sigma), 1)[1] # density dependence of birth
 #d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1)[1] # density dependence of death
-scr = PickTrait(scr_mu, scr_sigma)
-fec = PickTrait(fec_mu, fec_sigma)
-m = PickTrait(m_mu, m_sigma)
+scr = pick_trait(scr_mu, scr_sigma)
+fec = pick_trait(fec_mu, fec_sigma)
+m = pick_trait(m_mu, m_sigma)
 # calculate initial constant 
 r_max = b_max-d_min
 #K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
@@ -47,27 +47,34 @@ par_names = ["b_max", "d_min", "scr", "fec", "m"]
 no_state = length(N_init) 
 no_param = length(param_vect) 
 
-constant_vect = [] #, K]
+constant_vect = [] 
+
+# ======================================================================
+#         2.  PARAMETER-STATE MAPPING AND GEM SIMULATION CHOICES
+# ======================================================================
+
 # Define the mapping arrays
 # nrow = state, ncol = param
-state_par_match = [1 1 0 0 0; 0 0 1 1 1]
+state_par_match = [1 1 0 0 0 ; 
+                   0 0 1 1 1]
 # nrow = state, ncol = genotype 
-state_geno_match = [1 0 0 0; 0 0 1 0] # startng genotype
+state_geno_match = [1 0 ; 
+                    0 1 ] # startng genotype
 
 no_columns = no_param + 1 + size(state_geno_match, 2) 
-geno_names = ["g_1", "g_2", "g_3", "g_4"]
+geno_names = ["g_1", "g_2"]
 
-GEM_ver = ["ver1"]#, "ver2"]
+# ===================================================================
+# simulation design choices
+
+GEM_ver = ["ver1", "ver2"]
 # nrow: state ID, ncol: GEM versions
 
-h2 = [ 0.0 ;
-       0.0 ]# narrow sense heritability
-
-
-#h2 = [ 0.0 0.2 ;
-#       0.0 0.2 ]# narrow sense heritability
+h2 = [ 0.0 0.2 ;
+       0.0 0.2 ]# narrow sense heritability
 
 # cv = nrow:state ID, ncol:length(param), stack:GEM ver}
+
 """
 Note: The first stack is for GEM ver 1; typically reserved for "no-evolution". All elements are set to 0.0
 In stack 2, set cv value for parameters corresponding to each state. 
@@ -76,30 +83,36 @@ You can mirror the dimensions of state_parameter_match matrix defined above.
 0 -> n/a for this state
 """
 
-cv = cat([ 0.1 0.1 0.0 0.0 0.0 ; 0.0 0.0 0.1 0.1 0.1],
-         #[ 0.3 0.1 0.0 0.0 0.0 ; 0.0 0.0 0.1 0.1 0.05], 
+cv = cat([ 0.1 0.1 0.0 0.0 0.0 ; # state 1; ver 1
+           0.0 0.0 0.1 0.1 0.1], # state 2
+         [ 0.3 0.1 0.0 0.0 0.0 ; # state 1; ver 2
+           0.0 0.0 0.1 0.1 0.05], # state 2
          dims=3)
 
+# =================================================================== 
 
 num_rep = 3
 t_max = 10.0 #upwards of 6 the events times get very very small
-min_time_step_to_store = 0.5
+min_time_step_to_store = 0.1
 stand_time = range(0, t_max, step = min_time_step_to_store)
 stand_time = collect(stand_time)
 num_time_steps = length(stand_time)
 
+# =================================================================== 
 
-# 
+# preallocateing memory and creating output containers
 pop_stand_out_all = fill(NaN, no_state, num_time_steps, num_rep, length(GEM_ver))
 x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
 x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
 
-
 # ======================================================================
-#                             INSTANTIATE 
+# ======================================================================
+#                            3. INSTANTIATE 
 # Only make changes to this block if you make changes to the variable 
 # names that are used to instantiate the struct. 
 # ======================================================================
+# ======================================================================
+
 """ 1. Instantiate the initial population state """
 N0 = InitState(N_init) # Vector{Int}
 
@@ -134,14 +147,14 @@ sim_params = SimulationParameter(
     num_rep, # Int
     t_max, # Float64
     min_time_step_to_store # Float64 
-    )
+)
+
 """ 6. Instantiate output container """
 sim_output = GEMOutput(
     pop_stand_out_all, # Array{Float64, 4}
     x_stand_out_all, # Array{Float64, 5}
     x_var_stand_out_all # Array{Float64, 5}
     )
-    
 
 """ 7. Instantiate Constants """
 gem_const_vect = GEMConstant(

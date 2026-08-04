@@ -23,6 +23,9 @@ dn2dt = f*s*N1*N2 - m*N2
 # calculate constants:
 r_max = b_max-d_min
 
+list of traits (these will be unique to your system. One may 
+also have parameters that are not traits under selection
+(b_max, d_min, scr, f, m)
 
 """
 # ======================================================================
@@ -51,7 +54,7 @@ function death_pred(m::Float64, N::Vector{Int})
     death = m*N[2]
 end
 
-function Event_Terms(param_next::Matrix{Float64}, const_vect::Any, N::Vector{Int})
+function event_terms(param_next::Matrix{Float64}, const_vect::Any, N::Vector{Int})
     b = param_next[1,1] # max birth
     d = param_next[1,2] # min death
     #b_s = param_next[1,3] # density dependence of birth

@@ -1,5 +1,5 @@
 
-function Trait_Plot(; mediandf::DataFrame, vardf::DataFrame, 
+function trait_plot(; mediandf::DataFrame, vardf::DataFrame, 
     stateID::Int64, trait_to_plot::String, add_mean::Bool)
 
     #pick the right GEM version number and state ID
@@ -68,7 +68,7 @@ end
 
 # =====================================================
 
-function Geno_Freq_Plot(; freqdf::DataFrame, 
+function geno_freq_plot(; freqdf::DataFrame, 
                         stateID::Int64, 
                         geno_names::String )
 
@@ -97,7 +97,7 @@ function Geno_Freq_Plot(; freqdf::DataFrame,
 end
 
 #====================================================# 
-function Pop_Plot(;pop_data::DataFrame, stateID::Int64, add_mean::Bool)
+function pop_plot(;pop_data::DataFrame, stateID::Int64, add_mean::Bool)
     pop_time = pop_data[pop_data.state_ID .== stateID, :]
     rep_col_name = names(pop_time)[4:size(pop_time)[2]]
     pop_stack = stack(pop_time, 

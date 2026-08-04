@@ -2,7 +2,7 @@
 #		FUNCTION INITIATE POPULATION         #
 # ========================================== #
 
-function InitiatePop(N0::Vector{Int}, 
+function initiate_pop(N0::Vector{Int}, 
 					state_geno_match::Matrix{Int},
 					state_par_match::Matrix{Int}, 
 					init_comm_mat::Matrix{Float64}, 
@@ -34,7 +34,7 @@ function InitiatePop(N0::Vector{Int},
 		init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 1] .= qq
 		for zz = 1:length(params)
 			if !isnan(params_to_pick[zz,qq]) 
-				temp = PickIndiv(params_to_pick[zz,qq],cv[qq, zz, j]*params_to_pick[zz, qq],Int(traits_to_assign[qq,zz])) 
+				temp = pick_indiv(params_to_pick[zz,qq],cv[qq, zz, j]*params_to_pick[zz, qq],Int(traits_to_assign[qq,zz])) 
 			else 
 				temp = fill(NaN, Int(y0[qq]),1)
 			end 

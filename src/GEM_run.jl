@@ -1,30 +1,31 @@
 """ 
+This is the entru script.
 This file provides the space to run your GEM model.
-Before you start, please read README.txt
+Before you start, please go through README.txt
 """
 # run only once the first time
-# include("install_pkgs.jl")
+# include("Install_Pkgs.jl")
 
 # load all required packages 
 include("functions/Packages.jl")
 
-# load model definition  
-#include("bdLM_model_definition.jl") 
+# load model definition file for corresponding model 
+include("bdLM_model_definition.jl") 
 
 include("2spp_model_definition.jl") 
 
-#include("RF_model_def_nointerf.jl") 
+# load model configuration for corresponding model
+include("bdLM_model_config.jl")
 
-# load model configuration
 include("2spp_model_config.jl")
 
 # load all functions 
-include("functions/GEM_Functions.jl")
+include("functions/GEM_functions.jl")
+
 
 # run the GEM simulation
-using Dates
-start_t = now()
 
+start_t = now() # run this line to save staring time
 run_sim = GEM_sim(
                   N0, # initial state
                   model_par_vect, # model parameters in a vector
@@ -32,12 +33,10 @@ run_sim = GEM_sim(
                   design_choices, # evolution decisions
                   mappings, # parameter-to-state mapping
                   sim_params,# simulation parameters
-                  sim_output, # output containers
-                  verbose=true # show time on console
+                  sim_output;
+                  verbose=false # show time on console
                   ) #
-
-end_t = now()
-
+end_t = now() # run this line to save ending time
 
 
 
@@ -57,24 +56,15 @@ trait_dat.median
 # trait variance dataframe
 trait_dat.var
 
-# Pop_Plot(pop data, stateID)
-p = Pop_Plot(pop_data=run_sim.pop_df, stateID= 1, add_mean=true)
+# pop_plot(pop data, stateID)
+p = pop_plot(pop_data=run_sim.pop_df, stateID= 1, add_mean=true)
+save("population_plot.svg", p)
 
-````
-stateID = 1,2,3,4
-S, A, J, G 
-```
+# trait_plot(mean, var, stateID, "trait name")
+t = trait_plot(mediandf=trait_dat.median, vardf=trait_dat.var, 
+stateID=1, trait_to_plot="d_min", add_mean=true)
+save("d_min_trait_mean_plot.svg", t)
 
-# Trait_Plot(mean, var, stateID, "trait name")
-Trait_Plot(mediandf=trait_dat.median, vardf=trait_dat.var, 
-stateID=1, trait_to_plot="b_max", add_mean=false)
-
-
-# Geno_Plot(mean, stateID, "trait name")
-Geno_Freq_Plot(trait_dat.median, 4, "g_1")
-
-```
-- check density dependence forms
-- run ODE for model with interference 
- 
-```
+# geno_plot(mean, stateID, "trait name")
+g = geno_freq_plot(freqdf=trait_dat.median, stateID= 1, geno_names= "g_1")
+save("geno_freq_plot.svg", g)
