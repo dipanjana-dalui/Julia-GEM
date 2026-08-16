@@ -27,11 +27,12 @@ What to expect if pick_indiv is working correctly:
 
 using DataFrames, Statistics, Random, Distributions, Plots
 
-include("src/functions/DrawNewTrait.jl")
+# adjust accordingly
+include("src/functions/DrawNewTrait.jl") 
   
 
 # ============================================================== #
-#  Build a small example population for any one state
+#                  Narrow Sense Heritability 
 # ============================================================== #
 Random.seed!(42)
 
@@ -95,8 +96,9 @@ display(plt_h)
 Plots.savefig(plt_h, "drawnewtrait_valid.svg")
 
 #========================================================================#
-# 			Pick individual validation
+# 		         	Pick Individual 
 #========================================================================#
+# adjust accordingly
 include("src/functions/PickIndiv.jl")  
 
 Random.seed!(42)
