@@ -7,7 +7,7 @@ Before starting with GEMs, please read this document in full.
 - **Julia v1.10 or above**
 - We recommend using an IDE such as [VS Code](https://code.visualstudio.com/download)
 
-## (Very) Quick start 
+## (Very) Quick Start 
 
 1. All scripts are saved under the `src` directory.
 2. All major function scripts are inside `src/function`.
